@@ -8,7 +8,7 @@ CFLAGS = -g -Wall -Wextra
 default: $(TARGET)
 all: default
 
-OBJECTS = $(patsubst %.cpp, %.o, $(wildcard $(SRC_DIR)/*.cpp))
+OBJECTS = $(patsubst %.c, %.o, $(wildcard $(SRC_DIR)/*.c))
 HEADERS = $(wildcard $(SRC_DIR)/*.h)
 
 %.o: %.c $(HEADERS)
