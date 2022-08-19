@@ -35,18 +35,20 @@ void init_cpu(CPU *cpu)
 	memset(cpu, 0, sizeof(CPU));
 }
 
-void dump_cpu(CPU *cpu)
+void dump_cpu(CPU *cpu, FILE *f)
 {
-	//print stack bytes
+	fprintf(f, "\nStack bytes:\n");
 	for (size_t i = STACK_START; i <= STACK_END; ++i)
 	{
 		if (i % 8 == 0)
-			printf("\n");
-		printf("%2X ", cpu->memory[i]);
+			fprintf(f, "\n");
+		fprintf(f, "%2X ", cpu->memory[i]);
 	}
-	printf("\n");
 
-	//TODO - print registers
+
+	fprintf(f, "\nRegisters:\n A:%4hu X:%4hu Y:%4hu\n", cpu->A, cpu->X, cpu->Y);
+	fprintf(f, "PC:%4hu S:%4hu\n", cpu->PC, cpu->S);
+	fprintf(f, "Flags:\nNVBDIZC\n%d%d%d%d%d%d%d\n\n", cpu->N, cpu->V, cpu->B, cpu->D, cpu->I, cpu->Z, cpu->C);
 }
 
 
@@ -55,7 +57,7 @@ int main(void)
 	CPU cpu;
 	init_cpu(&cpu);
 
-	dump_cpu(&cpu);
+	dump_cpu(&cpu, stdout);
 
 
 	return 0;
