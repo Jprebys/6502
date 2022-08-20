@@ -96,6 +96,12 @@ see: https://rosettacode.org/wiki/Category:6502_Assembly#Addressing_Modes
 more: http://www.emulator101.com/6502-addressing-modes.html
 */
 
+// Implied instructions have no operands
+void implied(CPU *cpu, uint8_t *bytes)
+{
+	cpu->PC += 1;
+}
+
 // The operand of an immediate instruction is only one byte, and denotes a constant value
 void immediate(CPU *cpu, uint8_t *bytes)
 {
@@ -189,6 +195,7 @@ void zero_indirect_y(CPU *cpu, uint8_t *bytes)
 
 // INSTRUCTIONS
 // details: https://llx.com/Neil/a2/opcodes.html
+// more: http://www.emulator101.com/reference/6502-reference.html
 
 // group 1
 void ORA(CPU *cpu)
@@ -230,6 +237,7 @@ void SBC(CPU *cpu)
 {
 	
 }
+
 
 // group 2
 void ASL(CPU *cpu)
@@ -298,3 +306,71 @@ void CPX(CPU *cpu)
 {
 	
 }
+
+
+// conditional branch
+void BPL(CPU *cpu)
+{
+
+}
+
+void BMI(CPU *cpu)
+{
+
+}
+
+void BVC(CPU *cpu)
+{
+
+}
+
+void BVS(CPU *cpu)
+{
+
+}
+
+void BCC(CPU *cpu)
+{
+
+}
+
+void BCS(CPU *cpu)
+{
+
+}
+
+void BNE(CPU *cpu)
+{
+
+}
+
+void BEQ(CPU *cpu)
+{
+
+}
+
+
+// other
+void BRK(CPU *cpu)
+{
+
+}
+
+void JSR(CPU *cpu)
+{
+
+}
+
+void RTI(CPU *cpu)
+{
+
+}
+
+void RTS(CPU *cpu)
+{
+
+}
+
+
+// unused instruction
+void XXX(CPU *cpu);
