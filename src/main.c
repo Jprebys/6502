@@ -30,9 +30,9 @@ typedef struct CPU
 	// registers
 	// described here: https://codebase64.org/doku.php?id=base:6502_registers
 	uint16_t PC;   //program counter
-	uint16_t A;    //accumulator
-	uint16_t X;    //index register x
-	uint16_t Y;    //index register y
+	uint8_t A;    //accumulator
+	uint8_t X;    //index register x
+	uint8_t Y;    //index register y
 	uint8_t  S;    //stack pointer
 
 	// processor flags 
@@ -90,52 +90,100 @@ int main(void)
 }
 
 
-// ADDRESSING MODES
-// see: https://rosettacode.org/wiki/Category:6502_Assembly#Addressing_Modes
+/* 
+ADDRESSING MODES
+see: https://rosettacode.org/wiki/Category:6502_Assembly#Addressing_Modes
+more: http://www.emulator101.com/6502-addressing-modes.html
+*/
 
+// The operand of an immediate instruction is only one byte, and denotes a constant value
 void immediate(CPU *cpu, uint8_t *bytes)
 {
-	cpu->operand = bytes[0];
+	cpu->operand = bytes[cpu->PC + 1];
+	cpu->PC += 2;
 }
 
+// The operand of a zeropage instruction is one byte, and denotes an address in the zero page
 void zero_page(CPU *cpu, uint8_t *bytes)
 {
-	
+	cpu->operand = cpu->memory[bytes[cpu->PC + 1]];
+	cpu->PC += 2;
 }
 
+// The operand of an absolute instruction is two bytes, and denotes an address in memory
 void absolute(CPU *cpu, uint8_t *bytes)
 {
-	
+	uint8_t little, big;
+	little = bytes[cpu->PC + 1];
+	big = bytes[cpu->PC + 2];
+	uint16_t addr = (uint16_t)big << 8 | little;
+
+	cpu->operand = cpu->memory[addr];
+	cpu->PC += 3;
 }
 
+// A zero page memory address offset by X
 void zero_offset_x(CPU *cpu, uint8_t *bytes)
 {
-	
+	uint8_t index = (bytes[cpu->PC + 1] + cpu->X) % 256;
+	cpu->operand = cpu->memory[index];
+	cpu->PC += 2;
 }
 
+// A zero page memory address offset by Y
 void zero_offset_y(CPU *cpu, uint8_t *bytes)
 {
-	
+	uint8_t index = (bytes[cpu->PC + 1] + cpu->Y) % 256;
+	cpu->operand = cpu->memory[index];
+	cpu->PC += 2;
 }
 
+// An absolute memory address offset by X
 void abs_offset_x(CPU *cpu, uint8_t *bytes)
 {
-	
+	uint8_t little, big;
+	little = bytes[cpu->PC + 1];
+	big = bytes[cpu->PC + 2];
+	uint16_t addr = (uint16_t)big << 8 | little;
+
+	cpu->operand = cpu->memory[addr + cpu->X];
+	cpu->PC += 3;
 }
 
+// An absolute memory address offset by Y
 void abs_offset_y(CPU *cpu, uint8_t *bytes)
 {
-	
+	uint8_t little, big;
+	little = bytes[cpu->PC + 1];
+	big = bytes[cpu->PC + 2];
+	uint16_t addr = (uint16_t)big << 8 | little;
+
+	cpu->operand = cpu->memory[addr + cpu->Y];
+	cpu->PC += 3;
 }
 
 void zero_indirect_x(CPU *cpu, uint8_t *bytes)
 {
-	
+	uint8_t little, big, *val;
+	val = &cpu->memory[bytes[cpu->PC + 1] + cpu->X];
+	little = *val;
+	big = *(val + 1);
+	uint16_t addr = (uint16_t)big << 8 | little;
+
+	cpu->operand = cpu->memory[addr];
+	cpu->PC += 2;
 }
 
 void zero_indirect_y(CPU *cpu, uint8_t *bytes)
 {
-	
+	uint8_t little, big, *val;
+	val = &cpu->memory[bytes[cpu->PC + 1]];
+	little = *val;
+	big = *(val + 1);
+	uint16_t addr = (uint16_t)big << 8 | little;
+
+	cpu->operand = cpu->memory[addr + cpu->Y];
+	cpu->PC += 2;
 }
 
 
