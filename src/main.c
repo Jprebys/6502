@@ -17,7 +17,7 @@ typedef struct Instruction
 {
 	char name[3];
 	void (*operation)(struct CPU *);
-	void (*addr_mode)(struct CPU *);
+	void (*addr_mode)(struct CPU *, uint8_t *);
 	uint8_t clock_cycles;
 } Instruction;
 
@@ -43,6 +43,10 @@ typedef struct CPU
 	unsigned int I : 1;  //interrupt disable
 	unsigned int Z : 1;  //zero
 	unsigned int C : 1;  //carry
+
+
+	uint16_t operand;
+
 } CPU;
 
 
@@ -89,47 +93,47 @@ int main(void)
 // ADDRESSING MODES
 // see: https://rosettacode.org/wiki/Category:6502_Assembly#Addressing_Modes
 
-void immediate(CPU *cpu)
+void immediate(CPU *cpu, uint8_t *bytes)
 {
-
+	cpu->operand = bytes[0];
 }
 
-void zero_page(CPU *cpu)
-{
-	
-}
-
-void absolute(CPU *cpu)
+void zero_page(CPU *cpu, uint8_t *bytes)
 {
 	
 }
 
-void zero_offset_x(CPU *cpu)
+void absolute(CPU *cpu, uint8_t *bytes)
 {
 	
 }
 
-void zero_offset_y(CPU *cpu)
+void zero_offset_x(CPU *cpu, uint8_t *bytes)
 {
 	
 }
 
-void abs_offset_x(CPU *cpu)
+void zero_offset_y(CPU *cpu, uint8_t *bytes)
 {
 	
 }
 
-void abs_offset_y(CPU *cpu)
+void abs_offset_x(CPU *cpu, uint8_t *bytes)
 {
 	
 }
 
-void zero_indirect_x(CPU *cpu)
+void abs_offset_y(CPU *cpu, uint8_t *bytes)
 {
 	
 }
 
-void zero_indirect_y(CPU *cpu)
+void zero_indirect_x(CPU *cpu, uint8_t *bytes)
+{
+	
+}
+
+void zero_indirect_y(CPU *cpu, uint8_t *bytes)
 {
 	
 }
