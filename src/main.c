@@ -10,13 +10,14 @@
 #define STACK_END      0x01FF
 #define N_INSTRUCTIONS 256
 
+
 struct CPU;
 
 typedef struct Instruction 
 {
 	char name[3];
-	void (*addr_mode)(struct CPU *);
 	void (*operation)(struct CPU *);
+	void (*addr_mode)(struct CPU *);
 	uint8_t clock_cycles;
 } Instruction;
 
@@ -80,7 +81,168 @@ int main(void)
 	CPU *cpu = init_cpu();
 	dump_cpu(cpu, stdout);
 	delete_cpu(cpu);
-	printf("%lu\n", sizeof(CPU) - ADDRESS_BYTES);
 
 	return 0;
+}
+
+
+// ADDRESSING MODES
+// see: https://rosettacode.org/wiki/Category:6502_Assembly#Addressing_Modes
+
+void immediate(CPU *cpu)
+{
+
+}
+
+void zero_page(CPU *cpu)
+{
+	
+}
+
+void absolute(CPU *cpu)
+{
+	
+}
+
+void zero_offset_x(CPU *cpu)
+{
+	
+}
+
+void zero_offset_y(CPU *cpu)
+{
+	
+}
+
+void abs_offset_x(CPU *cpu)
+{
+	
+}
+
+void abs_offset_y(CPU *cpu)
+{
+	
+}
+
+void zero_indirect_x(CPU *cpu)
+{
+	
+}
+
+void zero_indirect_y(CPU *cpu)
+{
+	
+}
+
+
+// INSTRUCTIONS
+// details: https://llx.com/Neil/a2/opcodes.html
+
+// group 1
+void ORA(CPU *cpu)
+{
+
+}
+
+void AND(CPU *cpu)
+{
+	
+}
+
+void EOR(CPU *cpu)
+{
+	
+}
+
+void ADC(CPU *cpu)
+{
+	
+}
+
+void STA(CPU *cpu)
+{
+	
+}
+
+void LDA(CPU *cpu)
+{
+	
+}
+
+void CMP(CPU *cpu)
+{
+	
+}
+
+void SBC(CPU *cpu)
+{
+	
+}
+
+// group 2
+void ASL(CPU *cpu)
+{
+	
+}
+
+void ROL(CPU *cpu)
+{
+	
+}
+
+void LSR(CPU *cpu)
+{
+	
+}
+
+void ROR(CPU *cpu)
+{
+	
+}
+
+void STX(CPU *cpu)
+{
+	
+}
+
+void LDX(CPU *cpu)
+{
+	
+}
+
+void DEC(CPU *cpu)
+{
+	
+}
+
+
+// group 3
+void BIT(CPU *cpu)
+{
+	
+}
+
+void JMP(CPU *cpu)
+{
+	
+}
+
+void STY(CPU *cpu)
+{
+	
+}
+
+void LDY(CPU *cpu)
+{
+	
+}
+
+void CPY(CPU *cpu)
+{
+	
+}
+
+void CPX(CPU *cpu)
+{
+	
 }
