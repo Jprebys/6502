@@ -1,6 +1,6 @@
 TARGET = main
 SRC_DIR = src
-CC = g++
+CC = gcc
 CFLAGS = -g -Wall -Wextra
 
 .PHONY: default all clean

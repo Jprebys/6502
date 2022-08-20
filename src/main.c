@@ -1,4 +1,5 @@
 #include <stdint.h>
+#include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
 
@@ -7,9 +8,23 @@
 #define ADDRESS_BYTES  BYTES_PER_PAGE*PAGES
 #define STACK_START    0x0100
 #define STACK_END      0x01FF
+#define N_INSTRUCTIONS 256
 
-typedef struct {
-	uint8_t memory[ADDRESS_BYTES]; 
+struct CPU;
+
+typedef struct Instruction 
+{
+	char name[3];
+	void (*addr_mode)(struct CPU *);
+	void (*operation)(struct CPU *);
+	uint8_t clock_cycles;
+} Instruction;
+
+
+typedef struct CPU
+{
+	uint8_t memory[ADDRESS_BYTES];
+	Instruction inst_table[N_INSTRUCTIONS];
 
 	// registers
 	// described here: https://codebase64.org/doku.php?id=base:6502_registers
@@ -30,10 +45,19 @@ typedef struct {
 } CPU;
 
 
-void init_cpu(CPU *cpu)
+CPU *init_cpu()
 {
+	CPU *cpu = malloc(sizeof(CPU));
 	memset(cpu, 0, sizeof(CPU));
+	return cpu;
 }
+
+
+void delete_cpu(CPU *cpu)
+{
+	free(cpu);
+}
+
 
 void dump_cpu(CPU *cpu, FILE *f)
 {
@@ -45,20 +69,18 @@ void dump_cpu(CPU *cpu, FILE *f)
 		fprintf(f, "%2X ", cpu->memory[i]);
 	}
 
-
-	fprintf(f, "\nRegisters:\n A:%4hu X:%4hu Y:%4hu\n", cpu->A, cpu->X, cpu->Y);
+	fprintf(f, "\n\nRegisters:\n A:%4hu X:%4hu Y:%4hu\n", cpu->A, cpu->X, cpu->Y);
 	fprintf(f, "PC:%4hu S:%4hu\n", cpu->PC, cpu->S);
-	fprintf(f, "Flags:\nNVBDIZC\n%d%d%d%d%d%d%d\n\n", cpu->N, cpu->V, cpu->B, cpu->D, cpu->I, cpu->Z, cpu->C);
+	fprintf(f, "Flags:  NVBDIZC\n        %d%d%d%d%d%d%d\n\n", cpu->N, cpu->V, cpu->B, cpu->D, cpu->I, cpu->Z, cpu->C);
 }
 
 
 int main(void)
 {
-	CPU cpu;
-	init_cpu(&cpu);
-
-	dump_cpu(&cpu, stdout);
-
+	CPU *cpu = init_cpu();
+	dump_cpu(cpu, stdout);
+	delete_cpu(cpu);
+	printf("%lu\n", sizeof(CPU) - ADDRESS_BYTES);
 
 	return 0;
 }
