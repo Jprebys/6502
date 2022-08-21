@@ -80,12 +80,42 @@ void dump_cpu(CPU *cpu, FILE *f)
 }
 
 
+// This will read the whole file into an array of bytes...
+// maybe there is a smarter buffered way to do this
+uint8_t *read_file_as_bytes(char *file_name, size_t *file_len)
+{
+	FILE *f = fopen(file_name, "rb");
+	if (f == NULL)
+	{
+		perror("fopen");
+		exit(1);
+	}
+
+	fseek(f, 0, SEEK_END);
+	*file_len = (size_t)ftell(f);
+	rewind(f);
+
+	uint8_t *buffer = malloc(*file_len);
+	fread(buffer, 1, *file_len, f);
+	fclose(f);
+
+	return buffer;
+}
+
+
 int main(void)
 {
+	// size_t file_len;
+	// char *fname = "program";
+	// uint8_t *bytes = read_file_as_bytes(fname, &file_len);
+	// for (size_t i = 0; i < file_len; ++i)
+		// printf("%2X ", bytes[i]);
+	// printf("\n");
+
 	CPU *cpu = init_cpu();
 	dump_cpu(cpu, stdout);
-	delete_cpu(cpu);
 
+	delete_cpu(cpu);
 	return 0;
 }
 
