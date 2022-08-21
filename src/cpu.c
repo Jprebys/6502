@@ -43,7 +43,7 @@ typedef struct CPU
 	unsigned int Z : 1;  //zero
 	unsigned int C : 1;  //carry
 
-
+	Instruction *current_inst;
 	uint16_t operand;
 
 } CPU;
@@ -63,7 +63,7 @@ Instruction instruction_table[] =
 	{"BRK", BRK, implied, 0}, {"ORA", ORA, zero_indirect_x, 0}, {"XXX", NULL, NULL, 0}, {"XXX", NULL, NULL, 0}, {"XXX", NULL, NULL, 0}, {"ORA", ORA, zero_page, 0}, {"ASL", ASL, zero_page, 0}, {"XXX", NULL, NULL, 0}, {"PHP", PHP, implied, 0}, {"ORA", ORA, immediate, 0}, {"ASL", ASL, accumulator, 0}, {"XXX", NULL, NULL, 0}, {"XXX", NULL, NULL, 0}, {"ORA", ORA, absolute, 0}, {"ASL", ASL, absolute, 0}, {"XXX", NULL, NULL, 0},
 	{"BRK", BRK, implied, 0}, {"ORA", ORA, zero_indirect_x, 0}, {"XXX", NULL, NULL, 0}, {"XXX", NULL, NULL, 0}, {"XXX", NULL, NULL, 0}, {"ORA", ORA, zero_page, 0}, {"ASL", ASL, zero_page, 0}, {"XXX", NULL, NULL, 0}, {"PHP", PHP, implied, 0}, {"ORA", ORA, immediate, 0}, {"ASL", ASL, accumulator, 0}, {"XXX", NULL, NULL, 0}, {"XXX", NULL, NULL, 0}, {"ORA", ORA, absolute, 0}, {"ASL", ASL, absolute, 0}, {"XXX", NULL, NULL, 0},
 	{"BRK", BRK, implied, 0}, {"ORA", ORA, zero_indirect_x, 0}, {"XXX", NULL, NULL, 0}, {"XXX", NULL, NULL, 0}, {"XXX", NULL, NULL, 0}, {"ORA", ORA, zero_page, 0}, {"ASL", ASL, zero_page, 0}, {"XXX", NULL, NULL, 0}, {"PHP", PHP, implied, 0}, {"ORA", ORA, immediate, 0}, {"ASL", ASL, accumulator, 0}, {"XXX", NULL, NULL, 0}, {"XXX", NULL, NULL, 0}, {"ORA", ORA, absolute, 0}, {"ASL", ASL, absolute, 0}, {"XXX", NULL, NULL, 0},
-	{"BRK", BRK, implied, 0}, {"ORA", ORA, zero_indirect_x, 0}, {"XXX", NULL, NULL, 0}, {"XXX", NULL, NULL, 0}, {"XXX", NULL, NULL, 0}, {"ORA", ORA, zero_page, 0}, {"ASL", ASL, zero_page, 0}, {"XXX", NULL, NULL, 0}, {"PHP", PHP, implied, 0}, {"ORA", ORA, immediate, 0}, {"ASL", ASL, accumulator, 0}, {"XXX", NULL, NULL, 0}, {"XXX", NULL, NULL, 0}, {"ORA", ORA, absolute, 0}, {"ASL", ASL, absolute, 0}, {"XXX", NULL, NULL, 0},
+	{"BRK", BRK, implied, 0}, {"ORA", ORA, zero_indirect_x, 0}, {"XXX", NULL, NULL, 0}, {"XXX", NULL, NULL, 0}, {"XXX", NULL, NULL, 0}, {"ORA", ORA, zero_page, 0}, {"ASL", ASL, zero_page, 0}, {"XXX", NULL, NULL, 0}, {"PHP", PHP, implied, 0}, {"LDA", LDA, immediate, 0}, {"ASL", ASL, accumulator, 0}, {"XXX", NULL, NULL, 0}, {"XXX", NULL, NULL, 0}, {"ORA", ORA, absolute, 0}, {"ASL", ASL, absolute, 0}, {"XXX", NULL, NULL, 0},
 	{"BRK", BRK, implied, 0}, {"ORA", ORA, zero_indirect_x, 0}, {"XXX", NULL, NULL, 0}, {"XXX", NULL, NULL, 0}, {"XXX", NULL, NULL, 0}, {"ORA", ORA, zero_page, 0}, {"ASL", ASL, zero_page, 0}, {"XXX", NULL, NULL, 0}, {"PHP", PHP, implied, 0}, {"ORA", ORA, immediate, 0}, {"ASL", ASL, accumulator, 0}, {"XXX", NULL, NULL, 0}, {"XXX", NULL, NULL, 0}, {"ORA", ORA, absolute, 0}, {"ASL", ASL, absolute, 0}, {"XXX", NULL, NULL, 0},
 	{"BRK", BRK, implied, 0}, {"ORA", ORA, zero_indirect_x, 0}, {"XXX", NULL, NULL, 0}, {"XXX", NULL, NULL, 0}, {"XXX", NULL, NULL, 0}, {"ORA", ORA, zero_page, 0}, {"ASL", ASL, zero_page, 0}, {"XXX", NULL, NULL, 0}, {"PHP", PHP, implied, 0}, {"ORA", ORA, immediate, 0}, {"ASL", ASL, accumulator, 0}, {"XXX", NULL, NULL, 0}, {"XXX", NULL, NULL, 0}, {"ORA", ORA, absolute, 0}, {"ASL", ASL, absolute, 0}, {"XXX", NULL, NULL, 0},
 	{"BRK", BRK, implied, 0}, {"ORA", ORA, zero_indirect_x, 0}, {"XXX", NULL, NULL, 0}, {"XXX", NULL, NULL, 0}, {"XXX", NULL, NULL, 0}, {"ORA", ORA, zero_page, 0}, {"ASL", ASL, zero_page, 0}, {"XXX", NULL, NULL, 0}, {"PHP", PHP, implied, 0}, {"ORA", ORA, immediate, 0}, {"ASL", ASL, accumulator, 0}, {"XXX", NULL, NULL, 0}, {"XXX", NULL, NULL, 0}, {"ORA", ORA, absolute, 0}, {"ASL", ASL, absolute, 0}, {"XXX", NULL, NULL, 0},
@@ -89,13 +89,13 @@ void delete_cpu(CPU *cpu)
 
 void dump_cpu(CPU *cpu, FILE *f)
 {
-	fprintf(f, "\nStack bytes:\n");
-	for (size_t i = STACK_START; i <= STACK_END; ++i)
-	{
-		if (i % 8 == 0)
-			fprintf(f, "\n");
-		fprintf(f, "%2X ", cpu->memory[i]);
-	}
+	// fprintf(f, "\nStack bytes:\n");
+	// for (size_t i = STACK_START; i <= STACK_END; ++i)
+	// {
+	// 	if (i % 8 == 0)
+	// 		fprintf(f, "\n");
+	// 	fprintf(f, "%2X ", cpu->memory[i]);
+	// }
 
 	fprintf(f, "\n\nRegisters:\n A:%4hu X:%4hu Y:%4hu\n", cpu->A, cpu->X, cpu->Y);
 	fprintf(f, "PC:%4hu S:%4hu\n", cpu->PC, cpu->S);
@@ -126,17 +126,41 @@ uint8_t *read_file_as_bytes(char *file_name, size_t *file_len)
 }
 
 
+// 6502 assembler: https://www.masswerk.at/6502/assembler.html
+void run_program(CPU *cpu, uint8_t *program, size_t file_len)
+{
+	uint8_t opcode;
+	Instruction *current_inst;
+
+	while (cpu->PC < file_len) 
+	{
+		opcode = program[cpu->PC];
+		current_inst = &instruction_table[opcode];
+		cpu->current_inst = current_inst;
+
+		current_inst->addr_mode(cpu, program);
+		current_inst->operation(cpu);
+
+		dump_cpu(cpu, stdout);
+
+		// TODO - implement clock
+	}
+}
+
+
 int main(void)
 {
-	// size_t file_len;
-	// char *fname = "program";
-	// uint8_t *bytes = read_file_as_bytes(fname, &file_len);
-	// for (size_t i = 0; i < file_len; ++i)
-		// printf("%2X ", bytes[i]);
-	// printf("\n");
+	size_t file_len;
+	char *fname = "program";
+	uint8_t *bytes = read_file_as_bytes(fname, &file_len);
+	for (size_t i = 0; i < file_len; ++i)
+		printf("%2X ", bytes[i]);
+	printf("\n");
+
+
 
 	CPU *cpu = init_cpu();
-	dump_cpu(cpu, stdout);
+	run_program(cpu, bytes, file_len);
 
 	delete_cpu(cpu);
 	return 0;
@@ -159,6 +183,7 @@ void implied(CPU *cpu, uint8_t *bytes)
 // Operand is accumulator
 void accumulator(CPU *cpu, uint8_t *bytes)
 {
+	(void) bytes;
 	cpu->operand = cpu->A;
 	cpu->PC += 1;
 }
@@ -286,7 +311,7 @@ void STA(CPU *cpu)
 
 void LDA(CPU *cpu)
 {
-	(void) cpu;
+	cpu->A = cpu->operand;
 }
 
 void CMP(CPU *cpu)
@@ -415,6 +440,8 @@ void BEQ(CPU *cpu)
 void BRK(CPU *cpu)
 {
 	(void) cpu;
+	printf("BRK received; exiting...\n");
+	exit(EXIT_SUCCESS);
 }
 
 void JSR(CPU *cpu)

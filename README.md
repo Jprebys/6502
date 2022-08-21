@@ -8,3 +8,6 @@ Exact memory layout: https://sta.c64.org/cbm64mem.html
 
 Lots of detailed info: https://rosettacode.org/wiki/Category:6502_Assembly
 
+6502 virtual assembler: https://www.masswerk.at/6502/assembler.html
+
+Assembly specs and table: https://www.masswerk.at/6502/6502_instruction_set.html 
