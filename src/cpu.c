@@ -12,6 +12,8 @@
 #define STACK_END      0x01FF
 #define N_INSTRUCTIONS 256
 
+FILE *assembly_outfile;
+
 
 typedef struct Instruction 
 {
@@ -152,16 +154,23 @@ int main(void)
 {
 	size_t file_len;
 	char *fname = "program";
+	char *outfile_name = "program.asm";
 	uint8_t *bytes = read_file_as_bytes(fname, &file_len);
 	for (size_t i = 0; i < file_len; ++i)
 		printf("%2X ", bytes[i]);
 	printf("\n");
 
-
+	assembly_outfile = fopen(outfile_name, "w");
+	if (assembly_outfile == NULL) 
+	{
+		perror("fopen outfile");
+		exit(EXIT_FAILURE);
+	}
 
 	CPU *cpu = init_cpu();
 	run_program(cpu, bytes, file_len);
 
+	fclose(assembly_outfile);
 	delete_cpu(cpu);
 	return 0;
 }
@@ -178,6 +187,8 @@ void implied(CPU *cpu, uint8_t *bytes)
 {
 	(void) bytes;
 	cpu->PC += 1;
+	
+	fprintf(assembly_outfile, "%s\n", cpu->current_inst->name);
 }
 
 // Operand is accumulator
@@ -186,6 +197,8 @@ void accumulator(CPU *cpu, uint8_t *bytes)
 	(void) bytes;
 	cpu->operand = cpu->A;
 	cpu->PC += 1;
+
+	fprintf(assembly_outfile, "%s A\n", cpu->current_inst->name);
 }
 
 // The operand of an immediate instruction is only one byte, and denotes a constant value
@@ -193,11 +206,15 @@ void immediate(CPU *cpu, uint8_t *bytes)
 {
 	cpu->operand = bytes[cpu->PC + 1];
 	cpu->PC += 2;
+
+	fprintf(assembly_outfile, "%s #$%02X\n", cpu->current_inst->name, cpu->operand);
 }
 
 // The operand of a zeropage instruction is one byte, and denotes an address in the zero page
 void zero_page(CPU *cpu, uint8_t *bytes)
 {
+	fprintf(assembly_outfile, "%s $%02X\n", cpu->current_inst->name, bytes[cpu->PC + 1]);
+
 	cpu->operand = cpu->memory[bytes[cpu->PC + 1]];
 	cpu->PC += 2;
 }
@@ -212,11 +229,15 @@ void absolute(CPU *cpu, uint8_t *bytes)
 
 	cpu->operand = cpu->memory[addr];
 	cpu->PC += 3;
+
+	fprintf(assembly_outfile, "%s $%02X%02X\n", cpu->current_inst->name, little, big);
 }
 
 // A zero page memory address offset by X
 void zero_offset_x(CPU *cpu, uint8_t *bytes)
 {
+	fprintf(assembly_outfile, "%s $%02X,X\n", cpu->current_inst->name, bytes[cpu->PC + 1]);
+
 	uint8_t index = (bytes[cpu->PC + 1] + cpu->X) % 256;
 	cpu->operand = cpu->memory[index];
 	cpu->PC += 2;
@@ -225,6 +246,8 @@ void zero_offset_x(CPU *cpu, uint8_t *bytes)
 // A zero page memory address offset by Y
 void zero_offset_y(CPU *cpu, uint8_t *bytes)
 {
+	fprintf(assembly_outfile, "%s $%02X,Y\n", cpu->current_inst->name, bytes[cpu->PC + 1]);
+
 	uint8_t index = (bytes[cpu->PC + 1] + cpu->Y) % 256;
 	cpu->operand = cpu->memory[index];
 	cpu->PC += 2;
@@ -238,6 +261,9 @@ void abs_offset_x(CPU *cpu, uint8_t *bytes)
 	big = bytes[cpu->PC + 2];
 	uint16_t addr = (uint16_t)big << 8 | little;
 
+	fprintf(assembly_outfile, "%s $%02X%02X,X\n", cpu->current_inst->name, little, big);
+
+
 	cpu->operand = cpu->memory[addr + cpu->X];
 	cpu->PC += 3;
 }
@@ -250,17 +276,24 @@ void abs_offset_y(CPU *cpu, uint8_t *bytes)
 	big = bytes[cpu->PC + 2];
 	uint16_t addr = (uint16_t)big << 8 | little;
 
+	fprintf(assembly_outfile, "%s $%02X%02X,Y\n", cpu->current_inst->name, little, big);
+
 	cpu->operand = cpu->memory[addr + cpu->Y];
 	cpu->PC += 3;
 }
 
 void zero_indirect_x(CPU *cpu, uint8_t *bytes)
 {
+
+	// TODO - investigate the 'without carry' condition here
+	// "Increments without carry do not affect the hi-byte of an address and no page transitions do occur"
 	uint8_t little, big, *val;
 	val = &cpu->memory[bytes[cpu->PC + 1] + cpu->X];
 	little = *val;
 	big = *(val + 1);
 	uint16_t addr = (uint16_t)big << 8 | little;
+
+	fprintf(assembly_outfile, "%s ($%02X,X)\n", cpu->current_inst->name, *val);
 
 	cpu->operand = cpu->memory[addr];
 	cpu->PC += 2;
@@ -273,6 +306,8 @@ void zero_indirect_y(CPU *cpu, uint8_t *bytes)
 	little = *val;
 	big = *(val + 1);
 	uint16_t addr = (uint16_t)big << 8 | little;
+
+	fprintf(assembly_outfile, "%s ($%02X),Y\n", cpu->current_inst->name, *val);	
 
 	cpu->operand = cpu->memory[addr + cpu->Y];
 	cpu->PC += 2;
