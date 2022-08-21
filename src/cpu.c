@@ -3,6 +3,8 @@
 #include <stdio.h>
 #include <string.h>
 
+#include "cpu.h"
+
 #define BYTES_PER_PAGE 256
 #define PAGES          256
 #define ADDRESS_BYTES  BYTES_PER_PAGE*PAGES
@@ -10,8 +12,6 @@
 #define STACK_END      0x01FF
 #define N_INSTRUCTIONS 256
 
-
-struct CPU;
 
 typedef struct Instruction 
 {
@@ -25,7 +25,6 @@ typedef struct Instruction
 typedef struct CPU
 {
 	uint8_t memory[ADDRESS_BYTES];
-	Instruction inst_table[N_INSTRUCTIONS];
 
 	// registers
 	// described here: https://codebase64.org/doku.php?id=base:6502_registers
@@ -48,6 +47,11 @@ typedef struct CPU
 	uint16_t operand;
 
 } CPU;
+
+Instruction instruction_table[] = 
+{
+		{"BRK", BRK, implied, 0}
+};
 
 
 CPU *init_cpu()
