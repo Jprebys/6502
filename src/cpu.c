@@ -91,15 +91,7 @@ void delete_cpu(CPU *cpu)
 
 void dump_cpu(CPU *cpu, FILE *f)
 {
-	// fprintf(f, "\nStack bytes:\n");
-	// for (size_t i = STACK_START; i <= STACK_END; ++i)
-	// {
-	// 	if (i % 8 == 0)
-	// 		fprintf(f, "\n");
-	// 	fprintf(f, "%2X ", cpu->memory[i]);
-	// }
-
-	fprintf(f, "\n\nRegisters:\n A:%4hu X:%4hu Y:%4hu\n", cpu->A, cpu->X, cpu->Y);
+	fprintf(f, "Registers:\n A:%4hu X:%4hu Y:%4hu\n", cpu->A, cpu->X, cpu->Y);
 	fprintf(f, "PC:%4hu S:%4hu\n", cpu->PC, cpu->S);
 	fprintf(f, "Flags:  NVBDIZC\n        %d%d%d%d%d%d%d\n\n", cpu->N, cpu->V, cpu->B, cpu->D, cpu->I, cpu->Z, cpu->C);
 }
@@ -129,13 +121,15 @@ uint8_t *read_file_as_bytes(char *file_name, size_t *file_len)
 
 
 // 6502 assembler: https://www.masswerk.at/6502/assembler.html
-void run_program(CPU *cpu, uint8_t *program, size_t file_len)
+void run_program(CPU *cpu, uint8_t *program, size_t file_len, FILE *logfile)
 {
 	uint8_t opcode;
 	Instruction *current_inst;
 
-	while (cpu->PC < file_len) 
+	for (size_t inst_count = 0; cpu->PC < file_len; ++inst_count) 
 	{
+		fprintf(logfile, "-----RESULT OF INST %lu-----\n", inst_count);
+
 		opcode = program[cpu->PC];
 		current_inst = &instruction_table[opcode];
 		cpu->current_inst = current_inst;
@@ -156,9 +150,6 @@ int main(void)
 	char *fname = "program";
 	char *outfile_name = "program.asm";
 	uint8_t *bytes = read_file_as_bytes(fname, &file_len);
-	for (size_t i = 0; i < file_len; ++i)
-		printf("%2X ", bytes[i]);
-	printf("\n");
 
 	assembly_outfile = fopen(outfile_name, "w");
 	if (assembly_outfile == NULL) 
@@ -168,7 +159,7 @@ int main(void)
 	}
 
 	CPU *cpu = init_cpu();
-	run_program(cpu, bytes, file_len);
+	run_program(cpu, bytes, file_len, stdout);
 
 	fclose(assembly_outfile);
 	delete_cpu(cpu);
