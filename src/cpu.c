@@ -48,9 +48,28 @@ typedef struct CPU
 
 } CPU;
 
+
+// full instr set: https://www.masswerk.at/6502/6502_instruction_set.html
 Instruction instruction_table[] = 
 {
-		{"BRK", BRK, implied, 0}
+	{"BRK", BRK, implied, 0}, {"ORA", ORA, zero_indirect_x, 0}, {"XXX", NULL, NULL, 0}, {"XXX", NULL, NULL, 0}, {"XXX", NULL, NULL, 0}, {"ORA", ORA, zero_page, 0}, {"ASL", ASL, zero_page, 0}, {"XXX", NULL, NULL, 0}, {"PHP", PHP, implied, 0}, {"ORA", ORA, immediate, 0}, {"ASL", ASL, accumulator, 0}, {"XXX", NULL, NULL, 0}, {"XXX", NULL, NULL, 0}, {"ORA", ORA, absolute, 0}, {"ASL", ASL, absolute, 0}, {"XXX", NULL, NULL, 0},
+
+	{"BRK", BRK, implied, 0}, {"ORA", ORA, zero_indirect_x, 0}, {"XXX", NULL, NULL, 0}, {"XXX", NULL, NULL, 0}, {"XXX", NULL, NULL, 0}, {"ORA", ORA, zero_page, 0}, {"ASL", ASL, zero_page, 0}, {"XXX", NULL, NULL, 0}, {"PHP", PHP, implied, 0}, {"ORA", ORA, immediate, 0}, {"ASL", ASL, accumulator, 0}, {"XXX", NULL, NULL, 0}, {"XXX", NULL, NULL, 0}, {"ORA", ORA, absolute, 0}, {"ASL", ASL, absolute, 0}, {"XXX", NULL, NULL, 0},
+	{"BRK", BRK, implied, 0}, {"ORA", ORA, zero_indirect_x, 0}, {"XXX", NULL, NULL, 0}, {"XXX", NULL, NULL, 0}, {"XXX", NULL, NULL, 0}, {"ORA", ORA, zero_page, 0}, {"ASL", ASL, zero_page, 0}, {"XXX", NULL, NULL, 0}, {"PHP", PHP, implied, 0}, {"ORA", ORA, immediate, 0}, {"ASL", ASL, accumulator, 0}, {"XXX", NULL, NULL, 0}, {"XXX", NULL, NULL, 0}, {"ORA", ORA, absolute, 0}, {"ASL", ASL, absolute, 0}, {"XXX", NULL, NULL, 0},
+	{"BRK", BRK, implied, 0}, {"ORA", ORA, zero_indirect_x, 0}, {"XXX", NULL, NULL, 0}, {"XXX", NULL, NULL, 0}, {"XXX", NULL, NULL, 0}, {"ORA", ORA, zero_page, 0}, {"ASL", ASL, zero_page, 0}, {"XXX", NULL, NULL, 0}, {"PHP", PHP, implied, 0}, {"ORA", ORA, immediate, 0}, {"ASL", ASL, accumulator, 0}, {"XXX", NULL, NULL, 0}, {"XXX", NULL, NULL, 0}, {"ORA", ORA, absolute, 0}, {"ASL", ASL, absolute, 0}, {"XXX", NULL, NULL, 0},
+	{"BRK", BRK, implied, 0}, {"ORA", ORA, zero_indirect_x, 0}, {"XXX", NULL, NULL, 0}, {"XXX", NULL, NULL, 0}, {"XXX", NULL, NULL, 0}, {"ORA", ORA, zero_page, 0}, {"ASL", ASL, zero_page, 0}, {"XXX", NULL, NULL, 0}, {"PHP", PHP, implied, 0}, {"ORA", ORA, immediate, 0}, {"ASL", ASL, accumulator, 0}, {"XXX", NULL, NULL, 0}, {"XXX", NULL, NULL, 0}, {"ORA", ORA, absolute, 0}, {"ASL", ASL, absolute, 0}, {"XXX", NULL, NULL, 0},
+	{"BRK", BRK, implied, 0}, {"ORA", ORA, zero_indirect_x, 0}, {"XXX", NULL, NULL, 0}, {"XXX", NULL, NULL, 0}, {"XXX", NULL, NULL, 0}, {"ORA", ORA, zero_page, 0}, {"ASL", ASL, zero_page, 0}, {"XXX", NULL, NULL, 0}, {"PHP", PHP, implied, 0}, {"ORA", ORA, immediate, 0}, {"ASL", ASL, accumulator, 0}, {"XXX", NULL, NULL, 0}, {"XXX", NULL, NULL, 0}, {"ORA", ORA, absolute, 0}, {"ASL", ASL, absolute, 0}, {"XXX", NULL, NULL, 0},
+	{"BRK", BRK, implied, 0}, {"ORA", ORA, zero_indirect_x, 0}, {"XXX", NULL, NULL, 0}, {"XXX", NULL, NULL, 0}, {"XXX", NULL, NULL, 0}, {"ORA", ORA, zero_page, 0}, {"ASL", ASL, zero_page, 0}, {"XXX", NULL, NULL, 0}, {"PHP", PHP, implied, 0}, {"ORA", ORA, immediate, 0}, {"ASL", ASL, accumulator, 0}, {"XXX", NULL, NULL, 0}, {"XXX", NULL, NULL, 0}, {"ORA", ORA, absolute, 0}, {"ASL", ASL, absolute, 0}, {"XXX", NULL, NULL, 0},
+	{"BRK", BRK, implied, 0}, {"ORA", ORA, zero_indirect_x, 0}, {"XXX", NULL, NULL, 0}, {"XXX", NULL, NULL, 0}, {"XXX", NULL, NULL, 0}, {"ORA", ORA, zero_page, 0}, {"ASL", ASL, zero_page, 0}, {"XXX", NULL, NULL, 0}, {"PHP", PHP, implied, 0}, {"ORA", ORA, immediate, 0}, {"ASL", ASL, accumulator, 0}, {"XXX", NULL, NULL, 0}, {"XXX", NULL, NULL, 0}, {"ORA", ORA, absolute, 0}, {"ASL", ASL, absolute, 0}, {"XXX", NULL, NULL, 0},
+	{"BRK", BRK, implied, 0}, {"ORA", ORA, zero_indirect_x, 0}, {"XXX", NULL, NULL, 0}, {"XXX", NULL, NULL, 0}, {"XXX", NULL, NULL, 0}, {"ORA", ORA, zero_page, 0}, {"ASL", ASL, zero_page, 0}, {"XXX", NULL, NULL, 0}, {"PHP", PHP, implied, 0}, {"ORA", ORA, immediate, 0}, {"ASL", ASL, accumulator, 0}, {"XXX", NULL, NULL, 0}, {"XXX", NULL, NULL, 0}, {"ORA", ORA, absolute, 0}, {"ASL", ASL, absolute, 0}, {"XXX", NULL, NULL, 0},
+	{"BRK", BRK, implied, 0}, {"ORA", ORA, zero_indirect_x, 0}, {"XXX", NULL, NULL, 0}, {"XXX", NULL, NULL, 0}, {"XXX", NULL, NULL, 0}, {"ORA", ORA, zero_page, 0}, {"ASL", ASL, zero_page, 0}, {"XXX", NULL, NULL, 0}, {"PHP", PHP, implied, 0}, {"ORA", ORA, immediate, 0}, {"ASL", ASL, accumulator, 0}, {"XXX", NULL, NULL, 0}, {"XXX", NULL, NULL, 0}, {"ORA", ORA, absolute, 0}, {"ASL", ASL, absolute, 0}, {"XXX", NULL, NULL, 0},
+	{"BRK", BRK, implied, 0}, {"ORA", ORA, zero_indirect_x, 0}, {"XXX", NULL, NULL, 0}, {"XXX", NULL, NULL, 0}, {"XXX", NULL, NULL, 0}, {"ORA", ORA, zero_page, 0}, {"ASL", ASL, zero_page, 0}, {"XXX", NULL, NULL, 0}, {"PHP", PHP, implied, 0}, {"ORA", ORA, immediate, 0}, {"ASL", ASL, accumulator, 0}, {"XXX", NULL, NULL, 0}, {"XXX", NULL, NULL, 0}, {"ORA", ORA, absolute, 0}, {"ASL", ASL, absolute, 0}, {"XXX", NULL, NULL, 0},
+	{"BRK", BRK, implied, 0}, {"ORA", ORA, zero_indirect_x, 0}, {"XXX", NULL, NULL, 0}, {"XXX", NULL, NULL, 0}, {"XXX", NULL, NULL, 0}, {"ORA", ORA, zero_page, 0}, {"ASL", ASL, zero_page, 0}, {"XXX", NULL, NULL, 0}, {"PHP", PHP, implied, 0}, {"ORA", ORA, immediate, 0}, {"ASL", ASL, accumulator, 0}, {"XXX", NULL, NULL, 0}, {"XXX", NULL, NULL, 0}, {"ORA", ORA, absolute, 0}, {"ASL", ASL, absolute, 0}, {"XXX", NULL, NULL, 0},
+	{"BRK", BRK, implied, 0}, {"ORA", ORA, zero_indirect_x, 0}, {"XXX", NULL, NULL, 0}, {"XXX", NULL, NULL, 0}, {"XXX", NULL, NULL, 0}, {"ORA", ORA, zero_page, 0}, {"ASL", ASL, zero_page, 0}, {"XXX", NULL, NULL, 0}, {"PHP", PHP, implied, 0}, {"ORA", ORA, immediate, 0}, {"ASL", ASL, accumulator, 0}, {"XXX", NULL, NULL, 0}, {"XXX", NULL, NULL, 0}, {"ORA", ORA, absolute, 0}, {"ASL", ASL, absolute, 0}, {"XXX", NULL, NULL, 0},
+	{"BRK", BRK, implied, 0}, {"ORA", ORA, zero_indirect_x, 0}, {"XXX", NULL, NULL, 0}, {"XXX", NULL, NULL, 0}, {"XXX", NULL, NULL, 0}, {"ORA", ORA, zero_page, 0}, {"ASL", ASL, zero_page, 0}, {"XXX", NULL, NULL, 0}, {"PHP", PHP, implied, 0}, {"ORA", ORA, immediate, 0}, {"ASL", ASL, accumulator, 0}, {"XXX", NULL, NULL, 0}, {"XXX", NULL, NULL, 0}, {"ORA", ORA, absolute, 0}, {"ASL", ASL, absolute, 0}, {"XXX", NULL, NULL, 0},
+	{"BRK", BRK, implied, 0}, {"ORA", ORA, zero_indirect_x, 0}, {"XXX", NULL, NULL, 0}, {"XXX", NULL, NULL, 0}, {"XXX", NULL, NULL, 0}, {"ORA", ORA, zero_page, 0}, {"ASL", ASL, zero_page, 0}, {"XXX", NULL, NULL, 0}, {"PHP", PHP, implied, 0}, {"ORA", ORA, immediate, 0}, {"ASL", ASL, accumulator, 0}, {"XXX", NULL, NULL, 0}, {"XXX", NULL, NULL, 0}, {"ORA", ORA, absolute, 0}, {"ASL", ASL, absolute, 0}, {"XXX", NULL, NULL, 0},
+	{"BRK", BRK, implied, 0}, {"ORA", ORA, zero_indirect_x, 0}, {"XXX", NULL, NULL, 0}, {"XXX", NULL, NULL, 0}, {"XXX", NULL, NULL, 0}, {"ORA", ORA, zero_page, 0}, {"ASL", ASL, zero_page, 0}, {"XXX", NULL, NULL, 0}, {"PHP", PHP, implied, 0}, {"ORA", ORA, immediate, 0}, {"ASL", ASL, accumulator, 0}, {"XXX", NULL, NULL, 0}, {"XXX", NULL, NULL, 0}, {"ORA", ORA, absolute, 0}, {"ASL", ASL, absolute, 0}, {"XXX", NULL, NULL, 0},
+	{"BRK", BRK, implied, 0}, {"ORA", ORA, zero_indirect_x, 0}, {"XXX", NULL, NULL, 0}, {"XXX", NULL, NULL, 0}, {"XXX", NULL, NULL, 0}, {"ORA", ORA, zero_page, 0}, {"ASL", ASL, zero_page, 0}, {"XXX", NULL, NULL, 0}, {"PHP", PHP, implied, 0}, {"ORA", ORA, immediate, 0}, {"ASL", ASL, accumulator, 0}, {"XXX", NULL, NULL, 0}, {"XXX", NULL, NULL, 0}, {"ORA", ORA, absolute, 0}, {"ASL", ASL, absolute, 0}, {"XXX", NULL, NULL, 0},	
 };
 
 
@@ -133,6 +152,14 @@ more: http://www.emulator101.com/6502-addressing-modes.html
 // Implied instructions have no operands
 void implied(CPU *cpu, uint8_t *bytes)
 {
+	(void) bytes;
+	cpu->PC += 1;
+}
+
+// Operand is accumulator
+void accumulator(CPU *cpu, uint8_t *bytes)
+{
+	cpu->operand = cpu->A;
 	cpu->PC += 1;
 }
 
@@ -234,177 +261,283 @@ void zero_indirect_y(CPU *cpu, uint8_t *bytes)
 // group 1
 void ORA(CPU *cpu)
 {
-
+	(void) cpu;
 }
 
 void AND(CPU *cpu)
 {
-	
+	(void) cpu;
 }
 
 void EOR(CPU *cpu)
 {
-	
+	(void) cpu;
 }
 
 void ADC(CPU *cpu)
 {
-	
+	(void) cpu;
 }
 
 void STA(CPU *cpu)
 {
-	
+	(void) cpu;
 }
 
 void LDA(CPU *cpu)
 {
-	
+	(void) cpu;
 }
 
 void CMP(CPU *cpu)
 {
-	
+	(void) cpu;
 }
 
 void SBC(CPU *cpu)
 {
-	
+	(void) cpu;
 }
 
 
 // group 2
 void ASL(CPU *cpu)
 {
-	
+	(void) cpu;
 }
 
 void ROL(CPU *cpu)
 {
-	
+	(void) cpu;
 }
 
 void LSR(CPU *cpu)
 {
-	
+	(void) cpu;
 }
 
 void ROR(CPU *cpu)
 {
-	
+	(void) cpu;
 }
 
 void STX(CPU *cpu)
 {
-	
+	(void) cpu;
 }
 
 void LDX(CPU *cpu)
 {
-	
+	(void) cpu;
 }
 
 void DEC(CPU *cpu)
 {
-	
+	(void) cpu;
 }
 
 
 // group 3
 void BIT(CPU *cpu)
 {
-	
+	(void) cpu;
 }
 
 void JMP(CPU *cpu)
 {
-	
+	(void) cpu;
 }
 
 void STY(CPU *cpu)
 {
-	
+	(void) cpu;
 }
 
 void LDY(CPU *cpu)
 {
-	
+	(void) cpu;
 }
 
 void CPY(CPU *cpu)
 {
-	
+	(void) cpu;
 }
 
 void CPX(CPU *cpu)
 {
-	
+	(void) cpu;
 }
 
 
 // conditional branch
 void BPL(CPU *cpu)
 {
-
+	(void) cpu;
 }
 
 void BMI(CPU *cpu)
 {
-
+	(void) cpu;
 }
 
 void BVC(CPU *cpu)
 {
-
+	(void) cpu;
 }
 
 void BVS(CPU *cpu)
 {
-
+	(void) cpu;
 }
 
 void BCC(CPU *cpu)
 {
-
+	(void) cpu;
 }
 
 void BCS(CPU *cpu)
 {
-
+	(void) cpu;
 }
 
 void BNE(CPU *cpu)
 {
-
+	(void) cpu;
 }
 
 void BEQ(CPU *cpu)
 {
-
+	(void) cpu;
 }
 
 
 // other
 void BRK(CPU *cpu)
 {
-
+	(void) cpu;
 }
 
 void JSR(CPU *cpu)
 {
-
+	(void) cpu;
 }
 
 void RTI(CPU *cpu)
 {
-
+	(void) cpu;
 }
 
 void RTS(CPU *cpu)
 {
-
+	(void) cpu;
 }
 
+void PHP(CPU *cpu)
+{
+	(void) cpu;
+}
 
-// unused instruction
-void XXX(CPU *cpu);
+void PLP(CPU *cpu)
+{
+	(void) cpu;
+}
+
+void PHA(CPU *cpu)
+{
+	(void) cpu;
+}
+
+void PLA(CPU *cpu)
+{
+	(void) cpu;
+}
+
+void DEY(CPU *cpu)
+{
+	(void) cpu;
+}
+
+void TAY(CPU *cpu)
+{
+	(void) cpu;
+}
+
+void INY(CPU *cpu)
+{
+	(void) cpu;
+}
+
+void INX(CPU *cpu)
+{
+	(void) cpu;
+}	
+
+void CLC(CPU *cpu)
+{
+	(void) cpu;
+}
+
+void SEC(CPU *cpu)
+{
+	(void) cpu;
+}
+
+void CLI(CPU *cpu)
+{
+	(void) cpu;
+}
+
+void SEI(CPU *cpu)
+{
+	(void) cpu;
+}
+
+void TYA(CPU *cpu)
+{
+	(void) cpu;
+}
+
+void CLV(CPU *cpu)
+{
+	(void) cpu;
+}
+
+void CLD(CPU *cpu)
+{
+	(void) cpu;
+}
+
+void SED(CPU *cpu)
+{
+	(void) cpu;
+}
+
+void TXA(CPU *cpu)
+{
+	(void) cpu;
+}
+
+void TXS(CPU *cpu)
+{
+	(void) cpu;
+}
+
+void TAX(CPU *cpu)
+{
+	(void) cpu;
+}
+
+void TSX(CPU *cpu)
+{
+	(void) cpu;
+}
+
+void DEX(CPU *cpu)
+{
+	(void) cpu;
+}
+
+void NOP(CPU *cpu)
+{
+	(void) cpu;
+}
