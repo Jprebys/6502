@@ -2,57 +2,16 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
-
 #include "cpu.h"
 
-#define BYTES_PER_PAGE 256
-#define PAGES          256
-#define ADDRESS_BYTES  BYTES_PER_PAGE*PAGES
 #define STACK_START    0x0100
 #define STACK_END      0x01FF
 #define N_INSTRUCTIONS 256
 
 FILE *assembly_outfile;
 
-
-typedef struct Instruction 
-{
-	char name[3];
-	void (*operation)(struct CPU *);
-	void (*addr_mode)(struct CPU *, uint8_t *);
-	uint8_t clock_cycles;
-} Instruction;
-
-
-typedef struct CPU
-{
-	uint8_t memory[ADDRESS_BYTES];
-
-	// registers
-	// described here: https://codebase64.org/doku.php?id=base:6502_registers
-	uint16_t PC;         //program counter
-	uint8_t  A;          //accumulator
-	uint8_t  X;          //index register x
-	uint8_t  Y;          //index register y
-	uint8_t  S;          //stack pointer
-
-	// processor flags 
-	unsigned int N : 1;  //negative
-	unsigned int V : 1;  //overflow
-	unsigned int B : 1;  //break
-	unsigned int D : 1;  //decimal mode
-	unsigned int I : 1;  //interrupt disable
-	unsigned int Z : 1;  //zero
-	unsigned int C : 1;  //carry
-
-	Instruction *current_inst;
-	uint16_t operand;
-
-} CPU;
-
-
 // full instr set: https://www.masswerk.at/6502/6502_instruction_set.html
-Instruction instruction_table[256] = 
+Instruction instruction_table[N_INSTRUCTIONS] = 
 {// -0                          -1                                -2                          -3                      -4                              -5                              -6                              -7                      -8                        -9                             -A                            -B                      -C                             -D                             -E                             -F
 	{"BRK", BRK, implied, 7},   {"ORA", ORA, zero_indirect_x, 6}, {"XXX", NULL, NULL, 2},     {"XXX", NULL, NULL, 2}, {"XXX", NULL, NULL, 2},         {"ORA", ORA, zero_page, 3},     {"ASL", ASL, zero_page, 5},     {"XXX", NULL, NULL, 2}, {"PHP", PHP, implied, 3}, {"ORA", ORA, immediate, 2},    {"ASL", ASL, accumulator, 2}, {"XXX", NULL, NULL, 2}, {"XXX", NULL, NULL, 2},        {"ORA", ORA, absolute, 4},     {"ASL", ASL, absolute, 6},     {"XXX", NULL, NULL, 2}, // 2-
 	{"BPL", BPL, relative, 2},  {"ORA", ORA, zero_indirect_y, 5}, {"XXX", NULL, NULL, 2},     {"XXX", NULL, NULL, 2}, {"XXX", NULL, NULL, 2},         {"ORA", ORA, zero_offset_x, 4}, {"ASL", ASL, zero_offset_x, 6}, {"XXX", NULL, NULL, 2}, {"CLC", CLC, implied, 2}, {"ORA", ORA, abs_offset_y, 4}, {"XXX", NULL, NULL, 2},       {"XXX", NULL, NULL, 2}, {"XXX", NULL, NULL, 2},        {"ORA", ORA, abs_offset_x, 4}, {"ASL", ASL, abs_offset_x, 7}, {"XXX", NULL, NULL, 2}, // 1-
