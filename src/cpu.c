@@ -37,13 +37,15 @@ Instruction instruction_table[N_INSTRUCTIONS] =
 CPU *init_cpu()
 {
 	CPU *cpu = malloc(sizeof(CPU));
-	memset(cpu, 0, sizeof(CPU));
 	reset_cpu(cpu);
 	return cpu;
 }
 
 void reset_cpu(CPU *cpu)
 {
+	memset(cpu, 0, sizeof(CPU));
+	cpu->U = 1;  // unused flag bit 5 is always 1
+
 	uint8_t little, big;
 	little = cpu->memory[EXEC_ADDR];
 	big = cpu->memory[EXEC_ADDR + 1];
@@ -57,12 +59,39 @@ void delete_cpu(CPU *cpu)
 	free(cpu);
 }
 
+uint8_t get_flags(CPU *cpu)
+{
+	uint8_t result = 0x00;
+
+	result |= cpu->C << 0;
+	result |= cpu->Z << 1;
+	result |= cpu->I << 2;
+	result |= cpu->D << 3;
+	result |= cpu->B << 4;
+	result |= cpu->U << 5;
+	result |= cpu->V << 6;
+	result |= cpu->N << 7;
+
+	return result;
+}
+
+void set_flags(CPU *cpu, uint8_t flags)
+{
+	cpu->C = flags & 1 << 0 ? 1 : 0;
+	cpu->Z = flags & 1 << 1 ? 1 : 0;
+	cpu->I = flags & 1 << 2 ? 1 : 0;
+	cpu->D = flags & 1 << 3 ? 1 : 0;
+	cpu->B = flags & 1 << 4 ? 1 : 0;
+	cpu->U = flags & 1 << 5 ? 1 : 0;
+	cpu->V = flags & 1 << 6 ? 1 : 0;
+	cpu->N = flags & 1 << 7 ? 1 : 0;
+}
 
 void dump_cpu(CPU *cpu, FILE *f)
 {
 	fprintf(f, "Registers:\n A:%4hu X:%4hu Y:%4hu\n", cpu->A, cpu->X, cpu->Y);
 	fprintf(f, "PC:%4hu S:%4hu\n", cpu->PC, cpu->SP);
-	fprintf(f, "Flags:  NVBDIZC\n        %d%d%d%d%d%d%d\n\n", cpu->N, cpu->V, cpu->B, cpu->D, cpu->I, cpu->Z, cpu->C);
+	fprintf(f, "Flags:  NVUBDIZC\n        %d%d1%d%d%d%d%d\n\n", cpu->N, cpu->V, cpu->B, cpu->D, cpu->I, cpu->Z, cpu->C);
 }
 
 void inc_stack_ptr(CPU *cpu)
