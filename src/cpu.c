@@ -180,8 +180,8 @@ void run_program(CPU *cpu, uint8_t *program, size_t file_len, FILE *logfile)
 int main(void)
 {
 	size_t file_len;
-	char *fname = "program";
-	char *outfile_name = "program.asm";
+	char *fname = "program2";
+	char *outfile_name = "program2.asm";
 	uint8_t *bytes = read_file_as_bytes(fname, &file_len);
 
 	assembly_outfile = fopen(outfile_name, "w");
@@ -258,7 +258,7 @@ void absolute(CPU *cpu, uint8_t *bytes)
 	cpu->operand = cpu->memory[addr];
 	cpu->PC += 3;
 
-	fprintf(assembly_outfile, "%s $%02X%02X\n", cpu->current_inst->name, little, big);
+	fprintf(assembly_outfile, "%s $%02X%02X\n", cpu->current_inst->name, big, little);
 }
 
 // Indirect: operand is address; effective address is contents of word at address
@@ -270,7 +270,7 @@ void indirect(CPU *cpu, uint8_t *bytes)
 	big = bytes[cpu->PC + 2];
 	uint16_t addr = (uint16_t)big << 8 | little;
 
-	fprintf(assembly_outfile, "%s ($%02X%02X)\n", cpu->current_inst->name, little, big);
+	fprintf(assembly_outfile, "%s ($%02X%02X)\n", cpu->current_inst->name, big, little);
 
 	little = cpu->memory[addr];
 	if (little == 0xFF)
@@ -287,10 +287,13 @@ void relative(CPU *cpu, uint8_t *bytes)
 {
 	uint8_t offset = bytes[cpu->PC + 1];
 
+
 	fprintf(assembly_outfile, "%s $%02X\n", cpu->current_inst->name, offset);
 
 	cpu->operand = offset;
-	cpu->jmp_addr = cpu->PC + (int8_t)offset;
+	// cpu->jmp_addr = cpu->PC + (int8_t)offset;
+	// printf("%u = %u + %d   %u  %d\n", cpu->jmp_addr, cpu->PC, (int8_t)offset, offset, offset);
+	cpu->PC += 2;
 }
 
 // A zero page memory address offset by X
@@ -539,7 +542,7 @@ void STX(CPU *cpu)
 
 void LDX(CPU *cpu)
 {
-	cpu->X = cpu->A;
+	cpu->X = cpu->operand;
 }
 
 void INC(CPU *cpu)
@@ -577,7 +580,7 @@ void STY(CPU *cpu)
 
 void LDY(CPU *cpu)
 {
-	cpu->Y = cpu->A;
+	cpu->Y = cpu->memory;
 }
 
 void CPY(CPU *cpu)
@@ -601,49 +604,49 @@ void CPX(CPU *cpu)
 void BPL(CPU *cpu)
 {
 	if (!cpu->N)
-		cpu->PC = cpu->jmp_addr;
+		cpu->PC += (int8_t)cpu->operand;
 }
 
 void BMI(CPU *cpu)
 {
 	if (cpu->N)
-		cpu->PC = cpu->jmp_addr;
+		cpu->PC += (int8_t)cpu->operand;
 }
 
 void BVC(CPU *cpu)
 {
 	if (!cpu->V)
-		cpu->PC = cpu->jmp_addr;
+		cpu->PC += (int8_t)cpu->operand;
 }
 
 void BVS(CPU *cpu)
 {
 	if (cpu->V)
-		cpu->PC = cpu->jmp_addr;
+		cpu->PC += (int8_t)cpu->operand;
 }
 
 void BCC(CPU *cpu)
 {
 	if (!cpu->C)
-		cpu->PC = cpu->jmp_addr;
+		cpu->PC += (int8_t)cpu->operand;
 }
 
 void BCS(CPU *cpu)
 {
 	if (cpu->C)
-		cpu->PC = cpu->jmp_addr;
+		cpu->PC += (int8_t)cpu->operand;
 }
 
 void BNE(CPU *cpu)
 {
 	if (!cpu->Z)
-		cpu->PC = cpu->jmp_addr;
+		cpu->PC += (int8_t)cpu->operand;
 }
 
 void BEQ(CPU *cpu)
 {
 	if (cpu->Z)
-		cpu->PC = cpu->jmp_addr;
+		cpu->PC += (int8_t)cpu->operand;
 }
 
 
