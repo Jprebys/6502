@@ -114,6 +114,18 @@ void dec_stack_ptr(CPU *cpu)
 	cpu->SP--;
 }
 
+void stack_push(CPU *cpu, uint8_t value)
+{
+	cpu->memory[STACK_START + cpu->SP] = value;
+	dec_stack_ptr(cpu);
+}
+
+uint8_t stack_pop(CPU *cpu)
+{
+	inc_stack_ptr(cpu);
+	return cpu->memory[STACK_START + cpu->SP];
+}
+
 
 // This will read the whole file into an array of bytes...
 // maybe there is a smarter buffered way to do this
@@ -217,6 +229,7 @@ void accumulator(CPU *cpu, uint8_t *bytes)
 void immediate(CPU *cpu, uint8_t *bytes)
 {
 	cpu->operand = bytes[cpu->PC + 1];
+	cpu->jmp_addr = cpu->operand;
 	cpu->PC += 2;
 
 	fprintf(assembly_outfile, "%s #$%02X\n", cpu->current_inst->name, cpu->operand);
@@ -227,6 +240,7 @@ void zero_page(CPU *cpu, uint8_t *bytes)
 {
 	fprintf(assembly_outfile, "%s $%02X\n", cpu->current_inst->name, bytes[cpu->PC + 1]);
 
+	cpu->jmp_addr = bytes[cpu->PC + 1];
 	cpu->operand = cpu->memory[bytes[cpu->PC + 1]];
 	cpu->PC += 2;
 }
@@ -271,11 +285,12 @@ void indirect(CPU *cpu, uint8_t *bytes)
 // Set the operand to PC + the *signed* byte in the next 
 void relative(CPU *cpu, uint8_t *bytes)
 {
-	int8_t offset = bytes[cpu->PC + 1];
+	uint8_t offset = bytes[cpu->PC + 1];
 
 	fprintf(assembly_outfile, "%s $%02X\n", cpu->current_inst->name, offset);
 
-	cpu->PC += offset;
+	cpu->operand = offset;
+	cpu->jmp_addr = cpu->PC + (int8_t)offset;
 }
 
 // A zero page memory address offset by X
@@ -284,6 +299,7 @@ void zero_offset_x(CPU *cpu, uint8_t *bytes)
 	fprintf(assembly_outfile, "%s $%02X,X\n", cpu->current_inst->name, bytes[cpu->PC + 1]);
 
 	uint8_t index = (bytes[cpu->PC + 1] + cpu->X) % 256;
+	cpu->jmp_addr = (uint16_t)index;	
 	cpu->operand = cpu->memory[index];
 	cpu->PC += 2;
 }
@@ -294,6 +310,9 @@ void zero_offset_y(CPU *cpu, uint8_t *bytes)
 	fprintf(assembly_outfile, "%s $%02X,Y\n", cpu->current_inst->name, bytes[cpu->PC + 1]);
 
 	uint8_t index = (bytes[cpu->PC + 1] + cpu->Y) % 256;
+
+	cpu->jmp_addr = (uint16_t)index;
+
 	cpu->operand = cpu->memory[index];
 	cpu->PC += 2;
 }
@@ -308,6 +327,7 @@ void abs_offset_x(CPU *cpu, uint8_t *bytes)
 
 	fprintf(assembly_outfile, "%s $%02X%02X,X\n", cpu->current_inst->name, little, big);
 
+	cpu->jmp_addr = addr + cpu->X;
 
 	cpu->operand = cpu->memory[addr + cpu->X];
 	cpu->PC += 3;
@@ -322,6 +342,8 @@ void abs_offset_y(CPU *cpu, uint8_t *bytes)
 	uint16_t addr = (uint16_t)big << 8 | little;
 
 	fprintf(assembly_outfile, "%s $%02X%02X,Y\n", cpu->current_inst->name, little, big);
+
+	cpu->jmp_addr = addr + cpu->Y;
 
 	cpu->operand = cpu->memory[addr + cpu->Y];
 	cpu->PC += 3;
@@ -343,6 +365,8 @@ void zero_indirect_x(CPU *cpu, uint8_t *bytes)
 
 	fprintf(assembly_outfile, "%s ($%02X,X)\n", cpu->current_inst->name, *val);
 
+	cpu->jmp_addr = final_addr;
+
 	cpu->operand = cpu->memory[final_addr];
 	cpu->PC += 2;
 }
@@ -356,6 +380,8 @@ void zero_indirect_y(CPU *cpu, uint8_t *bytes)
 	uint16_t addr = (uint16_t)big << 8 | little;
 
 	fprintf(assembly_outfile, "%s ($%02X),Y\n", cpu->current_inst->name, *val);	
+
+	cpu->jmp_addr = addr + cpu->Y;
 
 	cpu->operand = cpu->memory[addr + cpu->Y];
 	cpu->PC += 2;
@@ -384,7 +410,9 @@ uint8_t check_carry(uint8_t value)
 // group 1
 void ORA(CPU *cpu)
 {
-	(void) cpu;
+	cpu->A |= cpu->operand;
+	cpu->N = check_negative(cpu->A);
+	cpu->Z = check_zero(cpu->A);
 }
 
 void AND(CPU *cpu)
@@ -424,7 +452,7 @@ void ADC(CPU *cpu)
 
 void STA(CPU *cpu)
 {
-	(void) cpu;
+	cpu->memory[cpu->jmp_addr] = cpu->A;
 }
 
 void LDA(CPU *cpu)
@@ -453,35 +481,65 @@ void SBC(CPU *cpu)
 // group 2
 void ASL(CPU *cpu)
 {
-	cpu->A = cpu->operand << 1;
+	uint8_t temp = cpu->operand << 1;
+	if (cpu->current_inst->addr_mode == accumulator)
+		cpu->A = temp;
+	else
+		cpu->memory[cpu->jmp_addr] = temp;
 	cpu->C = check_carry(cpu->operand);
-	cpu->N = check_negative(cpu->A);
-	cpu->Z = check_zero(cpu->A);
+	cpu->N = check_negative(temp);
+	cpu->Z = check_zero(temp);
 }
 
 void ROL(CPU *cpu)
 {
-	(void) cpu;
-}
+	cpu->C = check_carry(cpu->operand);
+
+	uint8_t temp = (cpu->operand << 1) + cpu->C;
+	if (cpu->current_inst->addr_mode == accumulator)
+		cpu->A = temp;
+	else
+		cpu->memory[cpu->jmp_addr] = temp;
+
+	cpu->N = check_negative(temp);
+	cpu->Z = check_zero(temp);
+}	
 
 void LSR(CPU *cpu)
 {
-	(void) cpu;
+	uint8_t temp = cpu->operand >> 1;
+	if (cpu->current_inst->addr_mode == accumulator)
+		cpu->A = temp;
+	else
+		cpu->memory[cpu->jmp_addr] = temp;
+	cpu->C = cpu->operand & 0x01 ? 1 : 0;
+	cpu->N = check_negative(temp);
+	cpu->Z = check_zero(temp);
 }
 
 void ROR(CPU *cpu)
 {
-	(void) cpu;
+	cpu->C = check_negative(cpu->operand);
+
+	uint8_t temp = (cpu->operand >> 1) | (cpu->C << 7);
+
+	if (cpu->current_inst->addr_mode == accumulator)
+		cpu->A = temp;
+	else
+		cpu->memory[cpu->jmp_addr] = temp;
+
+	cpu->N = check_negative(temp);
+	cpu->Z = check_zero(temp);
 }
 
 void STX(CPU *cpu)
 {
-	(void) cpu;
+	cpu->memory[cpu->jmp_addr] = cpu->X;
 }
 
 void LDX(CPU *cpu)
 {
-	(void) cpu;
+	cpu->X = cpu->A;
 }
 
 void INC(CPU *cpu)
@@ -514,12 +572,12 @@ void JMP(CPU *cpu)
 
 void STY(CPU *cpu)
 {
-	(void) cpu;
+	cpu->memory[cpu->jmp_addr] = cpu->Y;
 }
 
 void LDY(CPU *cpu)
 {
-	(void) cpu;
+	cpu->Y = cpu->A;
 }
 
 void CPY(CPU *cpu)
@@ -543,49 +601,49 @@ void CPX(CPU *cpu)
 void BPL(CPU *cpu)
 {
 	if (!cpu->N)
-		cpu->PC = cpu->operand;
+		cpu->PC = cpu->jmp_addr;
 }
 
 void BMI(CPU *cpu)
 {
 	if (cpu->N)
-		cpu->PC = cpu->operand;
+		cpu->PC = cpu->jmp_addr;
 }
 
 void BVC(CPU *cpu)
 {
 	if (!cpu->V)
-		cpu->PC = cpu->operand;
+		cpu->PC = cpu->jmp_addr;
 }
 
 void BVS(CPU *cpu)
 {
 	if (cpu->V)
-		cpu->PC = cpu->operand;
+		cpu->PC = cpu->jmp_addr;
 }
 
 void BCC(CPU *cpu)
 {
 	if (!cpu->C)
-		cpu->PC = cpu->operand;
+		cpu->PC = cpu->jmp_addr;
 }
 
 void BCS(CPU *cpu)
 {
 	if (cpu->C)
-		cpu->PC = cpu->operand;
+		cpu->PC = cpu->jmp_addr;
 }
 
 void BNE(CPU *cpu)
 {
 	if (!cpu->Z)
-		cpu->PC = cpu->operand;
+		cpu->PC = cpu->jmp_addr;
 }
 
 void BEQ(CPU *cpu)
 {
 	if (cpu->Z)
-		cpu->PC = cpu->operand;
+		cpu->PC = cpu->jmp_addr;
 }
 
 
@@ -600,37 +658,47 @@ void BRK(CPU *cpu)
 
 void JSR(CPU *cpu)
 {
-	(void) cpu;
+	// TODO - verify that we want the high bit of this on the stack
+	stack_push(cpu, (cpu->jmp_addr >> 8) & 0x00FF); 
+
+	cpu->PC = cpu->jmp_addr;
 }
 
 void RTI(CPU *cpu)
 {
-	(void) cpu;
+	uint8_t B = cpu->B;
+	set_flags(cpu, stack_pop(cpu));
+	cpu->B = B;
+
+	cpu->PC = stack_pop(cpu);
+	cpu->PC |= stack_pop(cpu) << 8;
 }
 
 void RTS(CPU *cpu)
 {
-	(void) cpu;
+	cpu->PC = stack_pop(cpu);
+	cpu->PC |= stack_pop(cpu) << 8;
+	cpu->PC++;
 }
 
 void PHP(CPU *cpu)
 {
-	(void) cpu;
+	stack_push(cpu, get_flags(cpu));
 }
 
 void PLP(CPU *cpu)
 {
-	(void) cpu;
+	set_flags(cpu, stack_pop(cpu));
 }
 
 void PHA(CPU *cpu)
 {
-	(void) cpu;
+	stack_push(cpu, cpu->A);
 }
 
 void PLA(CPU *cpu)
 {
-	(void) cpu;
+	cpu->A = stack_pop(cpu);
 }
 
 void DEY(CPU *cpu)
@@ -642,7 +710,7 @@ void DEY(CPU *cpu)
 
 void TAY(CPU *cpu)
 {
-	(void) cpu;
+	cpu->Y = cpu->A;
 }
 
 void INY(CPU *cpu)
@@ -666,7 +734,7 @@ void CLC(CPU *cpu)
 
 void SEC(CPU *cpu)
 {
-	(void) cpu;
+	cpu->C = 1;
 }
 
 void CLI(CPU *cpu)
@@ -676,12 +744,12 @@ void CLI(CPU *cpu)
 
 void SEI(CPU *cpu)
 {
-	(void) cpu;
+	cpu->I = 1;
 }
 
 void TYA(CPU *cpu)
 {
-	(void) cpu;
+	cpu->A = cpu->Y;
 }
 
 void CLV(CPU *cpu)
@@ -696,27 +764,27 @@ void CLD(CPU *cpu)
 
 void SED(CPU *cpu)
 {
-	(void) cpu;
+	cpu->D = 1;
 }
 
 void TXA(CPU *cpu)
 {
-	(void) cpu;
+	cpu->A = cpu->X;
 }
 
 void TXS(CPU *cpu)
 {
-	(void) cpu;
+	stack_push(cpu, cpu->X);
 }
 
 void TAX(CPU *cpu)
 {
-	(void) cpu;
+	cpu->X = cpu->A;
 }
 
 void TSX(CPU *cpu)
 {
-	(void) cpu;
+	cpu->X = stack_pop(cpu);
 }
 
 void DEX(CPU *cpu)
