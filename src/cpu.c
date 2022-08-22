@@ -313,9 +313,17 @@ void EOR(CPU *cpu)
 	(void) cpu;
 }
 
+// See details for complicated ADC flag settings here:
+// https://github.com/OneLoneCoder/olcNES/blob/master/Part%232%20-%20CPU/olc6502.cpp#L597
 void ADC(CPU *cpu)
 {
-	(void) cpu;
+	uint16_t temp = (uint16_t)cpu->A + (uint16_t)cpu->operand + (uint16_t)cpu->C;
+	cpu->C = temp > 255 ? 1 : 0;
+	cpu->Z = temp & 0x00FF ? 1 : 0;
+	cpu->V = (~((uint16_t)cpu->A ^ (uint16_t)cpu->operand) & ((uint16_t)cpu->A ^ (uint16_t)temp)) & 0x0080 ? 1 : 0;
+	cpu->N = temp & 0x80 ? 1 : 0;
+
+	cpu->A = temp & 0x00FF;
 }
 
 void STA(CPU *cpu)
@@ -333,9 +341,11 @@ void CMP(CPU *cpu)
 	(void) cpu;
 }
 
+// See details for complicated ADC flag settings here:
+// https://github.com/OneLoneCoder/olcNES/blob/master/Part%232%20-%20CPU/olc6502.cpp#L688 
 void SBC(CPU *cpu)
 {
-	(void) cpu;
+	(void)cpu;
 }
 
 
