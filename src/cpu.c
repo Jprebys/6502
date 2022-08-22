@@ -54,24 +54,22 @@ typedef struct CPU
 // full instr set: https://www.masswerk.at/6502/6502_instruction_set.html
 Instruction instruction_table[] = 
 {
-	{"BRK", BRK, implied, 0}, {"ORA", ORA, zero_indirect_x, 0}, {"XXX", NULL, NULL, 0}, {"XXX", NULL, NULL, 0}, {"XXX", NULL, NULL, 0}, {"ORA", ORA, zero_page, 0}, {"ASL", ASL, zero_page, 0}, {"XXX", NULL, NULL, 0}, {"PHP", PHP, implied, 0}, {"ORA", ORA, immediate, 0}, {"ASL", ASL, accumulator, 0}, {"XXX", NULL, NULL, 0}, {"XXX", NULL, NULL, 0}, {"ORA", ORA, absolute, 0}, {"ASL", ASL, absolute, 0}, {"XXX", NULL, NULL, 0},
-
-	{"BRK", BRK, implied, 0}, {"ORA", ORA, zero_indirect_x, 0}, {"XXX", NULL, NULL, 0}, {"XXX", NULL, NULL, 0}, {"XXX", NULL, NULL, 0}, {"ORA", ORA, zero_page, 0}, {"ASL", ASL, zero_page, 0}, {"XXX", NULL, NULL, 0}, {"PHP", PHP, implied, 0}, {"ORA", ORA, immediate, 0}, {"ASL", ASL, accumulator, 0}, {"XXX", NULL, NULL, 0}, {"XXX", NULL, NULL, 0}, {"ORA", ORA, absolute, 0}, {"ASL", ASL, absolute, 0}, {"XXX", NULL, NULL, 0},
-	{"BRK", BRK, implied, 0}, {"ORA", ORA, zero_indirect_x, 0}, {"XXX", NULL, NULL, 0}, {"XXX", NULL, NULL, 0}, {"XXX", NULL, NULL, 0}, {"ORA", ORA, zero_page, 0}, {"ASL", ASL, zero_page, 0}, {"XXX", NULL, NULL, 0}, {"PHP", PHP, implied, 0}, {"ORA", ORA, immediate, 0}, {"ASL", ASL, accumulator, 0}, {"XXX", NULL, NULL, 0}, {"XXX", NULL, NULL, 0}, {"ORA", ORA, absolute, 0}, {"ASL", ASL, absolute, 0}, {"XXX", NULL, NULL, 0},
-	{"BRK", BRK, implied, 0}, {"ORA", ORA, zero_indirect_x, 0}, {"XXX", NULL, NULL, 0}, {"XXX", NULL, NULL, 0}, {"XXX", NULL, NULL, 0}, {"ORA", ORA, zero_page, 0}, {"ASL", ASL, zero_page, 0}, {"XXX", NULL, NULL, 0}, {"PHP", PHP, implied, 0}, {"ORA", ORA, immediate, 0}, {"ASL", ASL, accumulator, 0}, {"XXX", NULL, NULL, 0}, {"XXX", NULL, NULL, 0}, {"ORA", ORA, absolute, 0}, {"ASL", ASL, absolute, 0}, {"XXX", NULL, NULL, 0},
-	{"BRK", BRK, implied, 0}, {"ORA", ORA, zero_indirect_x, 0}, {"XXX", NULL, NULL, 0}, {"XXX", NULL, NULL, 0}, {"XXX", NULL, NULL, 0}, {"ORA", ORA, zero_page, 0}, {"ASL", ASL, zero_page, 0}, {"XXX", NULL, NULL, 0}, {"PHP", PHP, implied, 0}, {"ORA", ORA, immediate, 0}, {"ASL", ASL, accumulator, 0}, {"XXX", NULL, NULL, 0}, {"XXX", NULL, NULL, 0}, {"ORA", ORA, absolute, 0}, {"ASL", ASL, absolute, 0}, {"XXX", NULL, NULL, 0},
-	{"BRK", BRK, implied, 0}, {"ORA", ORA, zero_indirect_x, 0}, {"XXX", NULL, NULL, 0}, {"XXX", NULL, NULL, 0}, {"XXX", NULL, NULL, 0}, {"ORA", ORA, zero_page, 0}, {"ASL", ASL, zero_page, 0}, {"XXX", NULL, NULL, 0}, {"PHP", PHP, implied, 0}, {"ORA", ORA, immediate, 0}, {"ASL", ASL, accumulator, 0}, {"XXX", NULL, NULL, 0}, {"XXX", NULL, NULL, 0}, {"ORA", ORA, absolute, 0}, {"ASL", ASL, absolute, 0}, {"XXX", NULL, NULL, 0},
-	{"BRK", BRK, implied, 0}, {"ORA", ORA, zero_indirect_x, 0}, {"XXX", NULL, NULL, 0}, {"XXX", NULL, NULL, 0}, {"XXX", NULL, NULL, 0}, {"ORA", ORA, zero_page, 0}, {"ASL", ASL, zero_page, 0}, {"XXX", NULL, NULL, 0}, {"PHP", PHP, implied, 0}, {"ORA", ORA, immediate, 0}, {"ASL", ASL, accumulator, 0}, {"XXX", NULL, NULL, 0}, {"XXX", NULL, NULL, 0}, {"ORA", ORA, absolute, 0}, {"ASL", ASL, absolute, 0}, {"XXX", NULL, NULL, 0},
-	{"BRK", BRK, implied, 0}, {"ORA", ORA, zero_indirect_x, 0}, {"XXX", NULL, NULL, 0}, {"XXX", NULL, NULL, 0}, {"XXX", NULL, NULL, 0}, {"ORA", ORA, zero_page, 0}, {"ASL", ASL, zero_page, 0}, {"XXX", NULL, NULL, 0}, {"PHP", PHP, implied, 0}, {"ORA", ORA, immediate, 0}, {"ASL", ASL, accumulator, 0}, {"XXX", NULL, NULL, 0}, {"XXX", NULL, NULL, 0}, {"ORA", ORA, absolute, 0}, {"ASL", ASL, absolute, 0}, {"XXX", NULL, NULL, 0},
-	{"BRK", BRK, implied, 0}, {"ORA", ORA, zero_indirect_x, 0}, {"XXX", NULL, NULL, 0}, {"XXX", NULL, NULL, 0}, {"XXX", NULL, NULL, 0}, {"ORA", ORA, zero_page, 0}, {"ASL", ASL, zero_page, 0}, {"XXX", NULL, NULL, 0}, {"PHP", PHP, implied, 0}, {"ORA", ORA, immediate, 0}, {"ASL", ASL, accumulator, 0}, {"XXX", NULL, NULL, 0}, {"XXX", NULL, NULL, 0}, {"ORA", ORA, absolute, 0}, {"ASL", ASL, absolute, 0}, {"XXX", NULL, NULL, 0},
-	{"BRK", BRK, implied, 0}, {"ORA", ORA, zero_indirect_x, 0}, {"XXX", NULL, NULL, 0}, {"XXX", NULL, NULL, 0}, {"XXX", NULL, NULL, 0}, {"ORA", ORA, zero_page, 0}, {"ASL", ASL, zero_page, 0}, {"XXX", NULL, NULL, 0}, {"PHP", PHP, implied, 0}, {"ORA", ORA, immediate, 0}, {"ASL", ASL, accumulator, 0}, {"XXX", NULL, NULL, 0}, {"XXX", NULL, NULL, 0}, {"ORA", ORA, absolute, 0}, {"ASL", ASL, absolute, 0}, {"XXX", NULL, NULL, 0},
-	{"BRK", BRK, implied, 0}, {"ORA", ORA, zero_indirect_x, 0}, {"XXX", NULL, NULL, 0}, {"XXX", NULL, NULL, 0}, {"XXX", NULL, NULL, 0}, {"ORA", ORA, zero_page, 0}, {"ASL", ASL, zero_page, 0}, {"XXX", NULL, NULL, 0}, {"PHP", PHP, implied, 0}, {"LDA", LDA, immediate, 0}, {"ASL", ASL, accumulator, 0}, {"XXX", NULL, NULL, 0}, {"XXX", NULL, NULL, 0}, {"ORA", ORA, absolute, 0}, {"ASL", ASL, absolute, 0}, {"XXX", NULL, NULL, 0},
-	{"BRK", BRK, implied, 0}, {"ORA", ORA, zero_indirect_x, 0}, {"XXX", NULL, NULL, 0}, {"XXX", NULL, NULL, 0}, {"XXX", NULL, NULL, 0}, {"ORA", ORA, zero_page, 0}, {"ASL", ASL, zero_page, 0}, {"XXX", NULL, NULL, 0}, {"PHP", PHP, implied, 0}, {"ORA", ORA, immediate, 0}, {"ASL", ASL, accumulator, 0}, {"XXX", NULL, NULL, 0}, {"XXX", NULL, NULL, 0}, {"ORA", ORA, absolute, 0}, {"ASL", ASL, absolute, 0}, {"XXX", NULL, NULL, 0},
-	{"BRK", BRK, implied, 0}, {"ORA", ORA, zero_indirect_x, 0}, {"XXX", NULL, NULL, 0}, {"XXX", NULL, NULL, 0}, {"XXX", NULL, NULL, 0}, {"ORA", ORA, zero_page, 0}, {"ASL", ASL, zero_page, 0}, {"XXX", NULL, NULL, 0}, {"PHP", PHP, implied, 0}, {"ORA", ORA, immediate, 0}, {"ASL", ASL, accumulator, 0}, {"XXX", NULL, NULL, 0}, {"XXX", NULL, NULL, 0}, {"ORA", ORA, absolute, 0}, {"ASL", ASL, absolute, 0}, {"XXX", NULL, NULL, 0},
-	{"BRK", BRK, implied, 0}, {"ORA", ORA, zero_indirect_x, 0}, {"XXX", NULL, NULL, 0}, {"XXX", NULL, NULL, 0}, {"XXX", NULL, NULL, 0}, {"ORA", ORA, zero_page, 0}, {"ASL", ASL, zero_page, 0}, {"XXX", NULL, NULL, 0}, {"PHP", PHP, implied, 0}, {"ORA", ORA, immediate, 0}, {"ASL", ASL, accumulator, 0}, {"XXX", NULL, NULL, 0}, {"XXX", NULL, NULL, 0}, {"ORA", ORA, absolute, 0}, {"ASL", ASL, absolute, 0}, {"XXX", NULL, NULL, 0},
-	{"BRK", BRK, implied, 0}, {"ORA", ORA, zero_indirect_x, 0}, {"XXX", NULL, NULL, 0}, {"XXX", NULL, NULL, 0}, {"XXX", NULL, NULL, 0}, {"ORA", ORA, zero_page, 0}, {"ASL", ASL, zero_page, 0}, {"XXX", NULL, NULL, 0}, {"PHP", PHP, implied, 0}, {"ORA", ORA, immediate, 0}, {"ASL", ASL, accumulator, 0}, {"XXX", NULL, NULL, 0}, {"XXX", NULL, NULL, 0}, {"ORA", ORA, absolute, 0}, {"ASL", ASL, absolute, 0}, {"XXX", NULL, NULL, 0},
-	{"BRK", BRK, implied, 0}, {"ORA", ORA, zero_indirect_x, 0}, {"XXX", NULL, NULL, 0}, {"XXX", NULL, NULL, 0}, {"XXX", NULL, NULL, 0}, {"ORA", ORA, zero_page, 0}, {"ASL", ASL, zero_page, 0}, {"XXX", NULL, NULL, 0}, {"PHP", PHP, implied, 0}, {"ORA", ORA, immediate, 0}, {"ASL", ASL, accumulator, 0}, {"XXX", NULL, NULL, 0}, {"XXX", NULL, NULL, 0}, {"ORA", ORA, absolute, 0}, {"ASL", ASL, absolute, 0}, {"XXX", NULL, NULL, 0},
-	{"BRK", BRK, implied, 0}, {"ORA", ORA, zero_indirect_x, 0}, {"XXX", NULL, NULL, 0}, {"XXX", NULL, NULL, 0}, {"XXX", NULL, NULL, 0}, {"ORA", ORA, zero_page, 0}, {"ASL", ASL, zero_page, 0}, {"XXX", NULL, NULL, 0}, {"PHP", PHP, implied, 0}, {"ORA", ORA, immediate, 0}, {"ASL", ASL, accumulator, 0}, {"XXX", NULL, NULL, 0}, {"XXX", NULL, NULL, 0}, {"ORA", ORA, absolute, 0}, {"ASL", ASL, absolute, 0}, {"XXX", NULL, NULL, 0},	
+	{"BRK", BRK, implied, 0},   {"ORA", ORA, zero_indirect_x, 0}, {"XXX", NULL, NULL, 0},     {"XXX", NULL, NULL, 0}, {"XXX", NULL, NULL, 0},         {"ORA", ORA, zero_page, 0},     {"ASL", ASL, zero_page, 0},     {"XXX", NULL, NULL, 0}, {"PHP", PHP, implied, 0}, {"ORA", ORA, immediate, 0},    {"ASL", ASL, accumulator, 0}, {"XXX", NULL, NULL, 0}, {"XXX", NULL, NULL, 0},        {"ORA", ORA, absolute, 0},     {"ASL", ASL, absolute, 0},     {"XXX", NULL, NULL, 0},
+	{"BPL", BPL, relative, 0},  {"ORA", ORA, zero_indirect_y, 0}, {"XXX", NULL, NULL, 0},     {"XXX", NULL, NULL, 0}, {"XXX", NULL, NULL, 0},         {"ORA", ORA, zero_offset_x, 0}, {"ASL", ASL, zero_offset_x, 0}, {"XXX", NULL, NULL, 0}, {"CLC", CLC, implied, 0}, {"ORA", ORA, abs_offset_y, 0}, {"XXX", NULL, NULL, 0},       {"XXX", NULL, NULL, 0}, {"XXX", NULL, NULL, 0},        {"ORA", ORA, abs_offset_x, 0}, {"ASL", ASL, abs_offset_x, 0}, {"XXX", NULL, NULL, 0},
+	{"JSR", JSR, absolute, 0},  {"AND", AND, zero_indirect_x, 0}, {"XXX", NULL, NULL, 0},     {"XXX", NULL, NULL, 0}, {"BIT", BIT, zero_page, 0},     {"AND", AND, zero_page, 0},     {"ROL", ROL, zero_page, 0},     {"XXX", NULL, NULL, 0}, {"PLP", PLP, implied, 0}, {"AND", AND, immediate, 0},    {"ROL", ROL, accumulator, 0}, {"XXX", NULL, NULL, 0}, {"BIT", BIT, absolute, 0},     {"AND", AND, absolute, 0},     {"ROL", ROL, absolute, 0},     {"XXX", NULL, NULL, 0},
+	{"BMI", BMI, relative, 0},  {"AND", AND, zero_indirect_y, 0}, {"XXX", NULL, NULL, 0},     {"XXX", NULL, NULL, 0}, {"XXX", NULL, NULL, 0},         {"AND", AND, zero_offset_x, 0}, {"ROL", ROL, zero_offset_x, 0}, {"XXX", NULL, NULL, 0}, {"SEC", SEC, implied, 0}, {"AND", AND, abs_offset_y, 0}, {"XXX", NULL, NULL, 0},       {"XXX", NULL, NULL, 0}, {"XXX", NULL, NULL, 0},        {"AND", AND, abs_offset_x, 0}, {"ROL", ROL, abs_offset_x, 0}, {"XXX", NULL, NULL, 0},
+	{"RTI", RTI, implied, 0},   {"EOR", EOR, zero_indirect_x, 0}, {"XXX", NULL, NULL, 0},     {"XXX", NULL, NULL, 0}, {"XXX", NULL, NULL, 0},         {"EOR", EOR, zero_page, 0},     {"LSR", LSR, zero_page, 0},     {"XXX", NULL, NULL, 0}, {"PHA", PHA, implied, 0}, {"EOR", EOR, immediate, 0},    {"LSR", LSR, accumulator, 0}, {"XXX", NULL, NULL, 0}, {"JMP", JMP, absolute, 0},     {"EOR", EOR, absolute, 0},     {"LSR", LSR, absolute, 0},     {"XXX", NULL, NULL, 0},
+	{"BVC", BVC, relative, 0},  {"EOR", EOR, zero_indirect_y, 0}, {"XXX", NULL, NULL, 0},     {"XXX", NULL, NULL, 0}, {"XXX", NULL, NULL, 0},         {"EOR", EOR, zero_offset_x, 0}, {"LSR", LSR, zero_offset_x, 0}, {"XXX", NULL, NULL, 0}, {"CLI", CLI, implied, 0}, {"EOR", EOR, abs_offset_y, 0}, {"XXX", NULL, NULL, 0},       {"XXX", NULL, NULL, 0}, {"XXX", NULL, NULL, 0},        {"EOR", EOR, abs_offset_x, 0}, {"LSR", LSR, abs_offset_x, 0}, {"XXX", NULL, NULL, 0},
+	{"RTS", RTS, implied, 0},   {"ADC", ADC, zero_indirect_x, 0}, {"XXX", NULL, NULL, 0},     {"XXX", NULL, NULL, 0}, {"XXX", NULL, NULL, 0},         {"ADC", ADC, zero_page, 0},     {"ROR", ROR, zero_page, 0},     {"XXX", NULL, NULL, 0}, {"PLA", PLA, implied, 0}, {"ADC", ADC, immediate, 0},    {"ROR", ROR, accumulator, 0}, {"XXX", NULL, NULL, 0}, {"JMP", JMP, indirect, 0},     {"ADC", ADC, absolute, 0},     {"ROR", ROR, absolute, 0},     {"XXX", NULL, NULL, 0},
+	{"BVS", BVS, relative, 0},  {"ADC", ADC, zero_indirect_y, 0}, {"XXX", NULL, NULL, 0},     {"XXX", NULL, NULL, 0}, {"XXX", NULL, NULL, 0},         {"ADC", ADC, zero_offset_x, 0}, {"ROR", ROR, zero_offset_x, 0}, {"XXX", NULL, NULL, 0}, {"SEI", SEI, implied, 0}, {"ADC", ADC, abs_offset_y, 0}, {"XXX", NULL, NULL, 0},       {"XXX", NULL, NULL, 0}, {"XXX", NULL, NULL, 0},        {"ADC", ADC, abs_offset_x, 0}, {"ROR", ROR, abs_offset_x, 0}, {"XXX", NULL, NULL, 0},
+	{"XXX", NULL, NULL, 0},     {"STA", STA, zero_indirect_x, 0}, {"XXX", NULL, NULL, 0},     {"XXX", NULL, NULL, 0}, {"STY", STY, zero_page, 0},     {"STA", STA, zero_page, 0},     {"STX", STX, zero_page, 0},     {"XXX", NULL, NULL, 0}, {"DEY", DEY, implied, 0}, {"XXX", NULL, NULL, 0},        {"TXA", TXA, implied, 0},     {"XXX", NULL, NULL, 0}, {"STY", STY, absolute, 0},     {"STA", STA, absolute, 0},     {"STX", STX, absolute, 0},     {"XXX", NULL, NULL, 0},
+	{"BCC", BCC, relative, 0},  {"STA", STA, zero_indirect_y, 0}, {"XXX", NULL, NULL, 0},     {"XXX", NULL, NULL, 0}, {"STY", STY, zero_offset_x, 0}, {"STA", STA, zero_offset_x, 0}, {"STX", STX, zero_offset_y, 0}, {"XXX", NULL, NULL, 0}, {"TYA", TYA, implied, 0}, {"STA", STA, abs_offset_y, 0}, {"TXS", TXS, implied, 0},     {"XXX", NULL, NULL, 0}, {"XXX", NULL, NULL, 0},        {"STA", STA, abs_offset_x, 0}, {"XXX", NULL, NULL, 0},        {"XXX", NULL, NULL, 0},
+	{"LDY", LDY, immediate, 0}, {"LDA", LDA, zero_indirect_x, 0}, {"LDX", LDX, immediate, 0}, {"XXX", NULL, NULL, 0}, {"LDY", LDY, zero_page, 0},     {"LDA", LDA, zero_page, 0},     {"LDX", LDX, zero_page, 0},     {"XXX", NULL, NULL, 0}, {"TAY", TAY, implied, 0}, {"LDA", LDA, immediate, 0},    {"TAX", TAX, implied, 0},     {"XXX", NULL, NULL, 0}, {"LDY", LDY, absolute, 0},     {"LDA", LDA, absolute, 0},     {"LDX", LDX, absolute, 0},     {"XXX", NULL, NULL, 0},
+	{"BCS", BCS, relative, 0},  {"LDA", LDA, zero_indirect_y, 0}, {"XXX", NULL, NULL, 0},     {"XXX", NULL, NULL, 0}, {"LDY", LDY, zero_offset_x, 0}, {"LDA", LDA, zero_offset_x, 0}, {"LDX", LDX, zero_offset_y, 0}, {"XXX", NULL, NULL, 0}, {"CLV", CLV, implied, 0}, {"LDA", LDA, abs_offset_y, 0}, {"TSX", TSX, implied, 0},     {"XXX", NULL, NULL, 0}, {"LDY", LDY, abs_offset_x, 0}, {"LDA", LDA, abs_offset_x, 0}, {"LDX", LDX, abs_offset_y, 0}, {"XXX", NULL, NULL, 0},
+	{"CPY", CPY, immediate, 0}, {"CMP", CMP, zero_indirect_x, 0}, {"XXX", NULL, NULL, 0},     {"XXX", NULL, NULL, 0}, {"CPY", CPY, zero_page, 0},     {"CMP", CMP, zero_page, 0},     {"DEC", DEC, zero_page, 0},     {"XXX", NULL, NULL, 0}, {"INY", INY, implied, 0}, {"CMP", CMP, immediate, 0},    {"DEX", DEX, implied, 0},     {"XXX", NULL, NULL, 0}, {"CPY", CPY, absolute, 0},     {"CMP", CMP, absolute, 0},     {"DEC", DEC, absolute, 0},     {"XXX", NULL, NULL, 0},
+	{"BNE", BNE, relative, 0},  {"CMP", CMP, zero_indirect_y, 0}, {"XXX", NULL, NULL, 0},     {"XXX", NULL, NULL, 0}, {"XXX", NULL, NULL, 0},         {"CMP", CMP, zero_offset_x, 0}, {"DEC", DEC, zero_offset_x, 0}, {"XXX", NULL, NULL, 0}, {"CLD", CLD, implied, 0}, {"CMP", CMP, abs_offset_y, 0}, {"XXX", NULL, NULL, 0},       {"XXX", NULL, NULL, 0}, {"XXX", NULL, NULL, 0},        {"CMP", CMP, abs_offset_x, 0}, {"DEC", DEC, abs_offset_x, 0}, {"XXX", NULL, NULL, 0},
+	{"CPX", CPX, immediate, 0}, {"SBC", SBC, zero_indirect_x, 0}, {"XXX", NULL, NULL, 0},     {"XXX", NULL, NULL, 0}, {"CPX", CPX, zero_page, 0},     {"SBC", SBC, zero_page, 0},     {"INC", INC, zero_page, 0},     {"XXX", NULL, NULL, 0}, {"INX", INX, implied, 0}, {"SBC", SBC, immediate, 0},    {"NOP", NOP, implied, 0},     {"XXX", NULL, NULL, 0}, {"CPX", CPX, absolute, 0},     {"SBC", SBC, absolute, 0},     {"INC", INC, absolute, 0},     {"XXX", NULL, NULL, 0},
+	{"BEQ", BEQ, relative, 0},  {"SBC", SBC, zero_indirect_y, 0}, {"XXX", NULL, NULL, 0},     {"XXX", NULL, NULL, 0}, {"XXX", NULL, NULL, 0},         {"SBC", SBC, zero_offset_x, 0}, {"INC", INC, zero_offset_x, 0}, {"XXX", NULL, NULL, 0}, {"SED", SED, implied, 0}, {"SBC", SBC, abs_offset_y, 0}, {"XXX", NULL, NULL, 0},       {"XXX", NULL, NULL, 0}, {"XXX", NULL, NULL, 0},        {"SBC", SBC, abs_offset_x, 0}, {"INC", INC, abs_offset_x, 0}, {"XXX", NULL, NULL, 0},	
 };
 
 
@@ -224,6 +222,33 @@ void absolute(CPU *cpu, uint8_t *bytes)
 	fprintf(assembly_outfile, "%s $%02X%02X\n", cpu->current_inst->name, little, big);
 }
 
+// Indirect: operand is address; effective address is contents of word at address
+void indirect(CPU *cpu, uint8_t *bytes)
+{
+	uint8_t little, big;
+	little = bytes[cpu->PC + 1];
+	big = bytes[cpu->PC + 2];
+	uint16_t addr = (uint16_t)big << 8 | little;
+
+	fprintf(assembly_outfile, "%s ($%02X%02X)\n", cpu->current_inst->name, little, big);
+
+	little = cpu->memory[addr];
+	big = cpu->memory[addr + 1];
+
+	cpu->operand = (uint16_t)big << 8 | little;
+	cpu->PC += 3;
+}
+
+// Set the operand to PC + the *signed* byte in the next 
+void relative(CPU *cpu, uint8_t *bytes)
+{
+	int8_t offset = bytes[cpu->PC + 1];
+
+	fprintf(assembly_outfile, "%s $%02X\n", cpu->current_inst->name, offset);
+
+	cpu->PC += offset;
+}
+
 // A zero page memory address offset by X
 void zero_offset_x(CPU *cpu, uint8_t *bytes)
 {
@@ -276,17 +301,20 @@ void abs_offset_y(CPU *cpu, uint8_t *bytes)
 void zero_indirect_x(CPU *cpu, uint8_t *bytes)
 {
 
-	// TODO - investigate the 'without carry' condition here
-	// "Increments without carry do not affect the hi-byte of an address and no page transitions do occur"
-	uint8_t little, big, *val;
-	val = &cpu->memory[bytes[cpu->PC + 1] + cpu->X];
+	uint8_t little, big, addr, *val;
+	addr = bytes[cpu->PC + 1] + cpu->X;
+	val = &cpu->memory[addr];
 	little = *val;
-	big = *(val + 1);
-	uint16_t addr = (uint16_t)big << 8 | little;
+	// "Increments without carry do not affect the hi-byte of an address and no page transitions do occur"
+	if (addr == 0xFF)
+		big = cpu->memory[0x00];
+	else
+		big = *(val + 1);
+	uint16_t final_addr = (uint16_t)big << 8 | little;
 
 	fprintf(assembly_outfile, "%s ($%02X,X)\n", cpu->current_inst->name, *val);
 
-	cpu->operand = cpu->memory[addr];
+	cpu->operand = cpu->memory[final_addr];
 	cpu->PC += 2;
 }
 
@@ -382,6 +410,11 @@ void LDX(CPU *cpu)
 	(void) cpu;
 }
 
+void INC(CPU *cpu)
+{
+	(void) cpu;
+}
+
 void DEC(CPU *cpu)
 {
 	(void) cpu;
@@ -466,7 +499,7 @@ void BEQ(CPU *cpu)
 void BRK(CPU *cpu)
 {
 	(void) cpu;
-	printf("BRK received; exiting...\n");
+	printf("BRK received; exiting...\n\n");
 	exit(EXIT_SUCCESS);
 }
 
