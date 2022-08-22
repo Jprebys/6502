@@ -6,6 +6,8 @@
 
 #define STACK_START    0x0100
 #define STACK_END      0x01FF
+#define STK_PTR_START  0xFD
+#define EXEC_ADDR      0xFFFC
 #define N_INSTRUCTIONS 256
 
 FILE *assembly_outfile;
@@ -36,9 +38,19 @@ CPU *init_cpu()
 {
 	CPU *cpu = malloc(sizeof(CPU));
 	memset(cpu, 0, sizeof(CPU));
+	reset_cpu(cpu);
 	return cpu;
 }
 
+void reset_cpu(CPU *cpu)
+{
+	uint8_t little, big;
+	little = cpu->memory[EXEC_ADDR];
+	big = cpu->memory[EXEC_ADDR + 1];
+	cpu->PC = (uint16_t)big << 8 | little;
+
+	cpu->SP = STK_PTR_START;
+}
 
 void delete_cpu(CPU *cpu)
 {
@@ -49,8 +61,28 @@ void delete_cpu(CPU *cpu)
 void dump_cpu(CPU *cpu, FILE *f)
 {
 	fprintf(f, "Registers:\n A:%4hu X:%4hu Y:%4hu\n", cpu->A, cpu->X, cpu->Y);
-	fprintf(f, "PC:%4hu S:%4hu\n", cpu->PC, cpu->S);
+	fprintf(f, "PC:%4hu S:%4hu\n", cpu->PC, cpu->SP);
 	fprintf(f, "Flags:  NVBDIZC\n        %d%d%d%d%d%d%d\n\n", cpu->N, cpu->V, cpu->B, cpu->D, cpu->I, cpu->Z, cpu->C);
+}
+
+void inc_stack_ptr(CPU *cpu)
+{
+	if (cpu->SP == 0xFF)
+	{
+		fprintf(stderr, "[ERROR] Stack underflow; exiting...");
+		exit(EXIT_FAILURE);
+	}
+	cpu->SP++;
+}
+
+void dec_stack_ptr(CPU *cpu)
+{
+	if (cpu->SP == 0x00)
+	{
+		fprintf(stderr, "[ERROR] Stack overflow; exiting...");
+		exit(EXIT_FAILURE);
+	}
+	cpu->SP--;
 }
 
 
@@ -87,6 +119,8 @@ void run_program(CPU *cpu, uint8_t *program, size_t file_len, FILE *logfile)
 	for (size_t inst_count = 0; cpu->PC < file_len; ++inst_count) 
 	{
 		fprintf(logfile, "-----RESULT OF INST %lu-----\n", inst_count);
+
+		cpu->operand = 0x0000;
 
 		opcode = program[cpu->PC];
 		current_inst = &instruction_table[opcode];
@@ -176,6 +210,8 @@ void absolute(CPU *cpu, uint8_t *bytes)
 	big = bytes[cpu->PC + 2];
 	uint16_t addr = (uint16_t)big << 8 | little;
 
+	cpu->jmp_addr = addr;
+
 	cpu->operand = cpu->memory[addr];
 	cpu->PC += 3;
 
@@ -183,6 +219,7 @@ void absolute(CPU *cpu, uint8_t *bytes)
 }
 
 // Indirect: operand is address; effective address is contents of word at address
+// only used by JMP
 void indirect(CPU *cpu, uint8_t *bytes)
 {
 	uint8_t little, big;
@@ -193,9 +230,12 @@ void indirect(CPU *cpu, uint8_t *bytes)
 	fprintf(assembly_outfile, "%s ($%02X%02X)\n", cpu->current_inst->name, little, big);
 
 	little = cpu->memory[addr];
+	if (little == 0xFF)
+		little = 0x00;  // no carry bug
 	big = cpu->memory[addr + 1];
 
-	cpu->operand = (uint16_t)big << 8 | little;
+	cpu->jmp_addr = (uint16_t)big << 8 | little;
+	cpu->operand = cpu->memory[cpu->jmp_addr];
 	cpu->PC += 3;
 }
 
@@ -297,6 +337,21 @@ void zero_indirect_y(CPU *cpu, uint8_t *bytes)
 // details: https://llx.com/Neil/a2/opcodes.html
 // more: http://www.emulator101.com/reference/6502-reference.html
 
+uint8_t check_negative(uint8_t value)
+{
+	return value & 0x80 ? 1 : 0;
+}
+
+uint8_t check_zero(uint8_t value)
+{
+	return value ? 0 : 1;
+}
+
+uint8_t check_carry(uint8_t value)
+{
+	return value & 0x80 ? 1 : 0;
+}
+
 // group 1
 void ORA(CPU *cpu)
 {
@@ -305,13 +360,18 @@ void ORA(CPU *cpu)
 
 void AND(CPU *cpu)
 {
-	(void) cpu;
+	cpu->A &= cpu->operand;
+	cpu->N = check_negative(cpu->A);
+	cpu->Z = check_zero(cpu->A);
 }
 
 void EOR(CPU *cpu)
 {
-	(void) cpu;
+	cpu->A ^= cpu->operand;
+	cpu->N = check_negative(cpu->A);
+	cpu->Z = check_zero(cpu->A);
 }
+
 
 // See details for complicated ADC flag settings here:
 // https://github.com/OneLoneCoder/olcNES/blob/master/Part%232%20-%20CPU/olc6502.cpp#L597
@@ -319,11 +379,18 @@ void ADC(CPU *cpu)
 {
 	uint16_t temp = (uint16_t)cpu->A + (uint16_t)cpu->operand + (uint16_t)cpu->C;
 	cpu->C = temp > 255 ? 1 : 0;
-	cpu->Z = temp & 0x00FF ? 1 : 0;
+	cpu->Z = (temp & 0x00FF) == 0 ? 1 : 0;
+
+	/*
+	The over flow is set if the two operands of the addition have the same sign, and the result has the opposite sign
+	so if the MSB of both operands is 1 and the MSB of the result (temp) is 0, or vice versa,
+	then the overflow flag is set. Notice that the final '&' here will result in 
+	0x80 if this is true on the left-hand side and it will be 0x00 otherwise.
+	*/
 	cpu->V = (~((uint16_t)cpu->A ^ (uint16_t)cpu->operand) & ((uint16_t)cpu->A ^ (uint16_t)temp)) & 0x0080 ? 1 : 0;
 	cpu->N = temp & 0x80 ? 1 : 0;
 
-	cpu->A = temp & 0x00FF;
+	cpu->A = (uint8_t)(temp & 0x00FF);
 }
 
 void STA(CPU *cpu)
@@ -338,21 +405,29 @@ void LDA(CPU *cpu)
 
 void CMP(CPU *cpu)
 {
-	(void) cpu;
+	uint16_t temp = (uint16_t)cpu->A - (uint16_t)cpu->operand;
+	cpu->N = temp & 0x0080 ? 1 : 0;
+	cpu->Z = check_zero(temp & 0x00FF);
+	cpu->C = (cpu->A >= cpu->operand) ? 1 : 0;
 }
 
-// See details for complicated ADC flag settings here:
-// https://github.com/OneLoneCoder/olcNES/blob/master/Part%232%20-%20CPU/olc6502.cpp#L688 
 void SBC(CPU *cpu)
 {
-	(void)cpu;
+	// invert the operand bits, and SBC becomes the same as ADC (i.e. ADC(x) == SBC(~x))
+	cpu->operand ^= 0x00FF;
+
+	// TODO - determine if this is sufficient
+	ADC(cpu);
 }
 
 
 // group 2
 void ASL(CPU *cpu)
 {
-	(void) cpu;
+	cpu->A = cpu->operand << 1;
+	cpu->C = check_carry(cpu->operand);
+	cpu->N = check_negative(cpu->A);
+	cpu->Z = check_zero(cpu->A);
 }
 
 void ROL(CPU *cpu)
@@ -382,24 +457,30 @@ void LDX(CPU *cpu)
 
 void INC(CPU *cpu)
 {
-	(void) cpu;
+	cpu->operand++;
+	cpu->Z = check_zero(cpu->operand);
+	cpu->N = check_negative(cpu->operand);
 }
 
 void DEC(CPU *cpu)
 {
-	(void) cpu;
+	cpu->operand--;
+	cpu->Z = check_zero(cpu->operand);
+	cpu->N = check_negative(cpu->operand);
 }
 
 
 // group 3
 void BIT(CPU *cpu)
 {
-	(void) cpu;
+	cpu->Z = check_zero((cpu->operand & cpu->A) & 0x00FF);
+	cpu->V = cpu->operand & (1 << 6) ? 1 : 0;
+	cpu->N = cpu->operand & (1 << 7) ? 1 : 0;
 }
 
 void JMP(CPU *cpu)
 {
-	(void) cpu;
+	cpu->PC = cpu->jmp_addr;
 }
 
 void STY(CPU *cpu)
@@ -414,60 +495,75 @@ void LDY(CPU *cpu)
 
 void CPY(CPU *cpu)
 {
-	(void) cpu;
+	uint16_t temp = (uint16_t)cpu->Y - (uint16_t)cpu->operand;
+	cpu->N = temp & 0x0080 ? 1 : 0;
+	cpu->Z = check_zero(temp & 0x00FF);
+	cpu->C = (cpu->Y >= cpu->operand) ? 1 : 0;
 }
 
 void CPX(CPU *cpu)
 {
-	(void) cpu;
+	uint16_t temp = (uint16_t)cpu->X - (uint16_t)cpu->operand;
+	cpu->N = temp & 0x0080 ? 1 : 0;
+	cpu->Z = check_zero(temp & 0x00FF);
+	cpu->C = (cpu->X >= cpu->operand) ? 1 : 0;
 }
 
 
-// conditional branch
+// conditional branches
 void BPL(CPU *cpu)
 {
-	(void) cpu;
+	if (!cpu->N)
+		cpu->PC = cpu->operand;
 }
 
 void BMI(CPU *cpu)
 {
-	(void) cpu;
+	if (cpu->N)
+		cpu->PC = cpu->operand;
 }
 
 void BVC(CPU *cpu)
 {
-	(void) cpu;
+	if (!cpu->V)
+		cpu->PC = cpu->operand;
 }
 
 void BVS(CPU *cpu)
 {
-	(void) cpu;
+	if (cpu->V)
+		cpu->PC = cpu->operand;
 }
 
 void BCC(CPU *cpu)
 {
-	(void) cpu;
+	if (!cpu->C)
+		cpu->PC = cpu->operand;
 }
 
 void BCS(CPU *cpu)
 {
-	(void) cpu;
+	if (cpu->C)
+		cpu->PC = cpu->operand;
 }
 
 void BNE(CPU *cpu)
 {
-	(void) cpu;
+	if (!cpu->Z)
+		cpu->PC = cpu->operand;
 }
 
 void BEQ(CPU *cpu)
 {
-	(void) cpu;
+	if (cpu->Z)
+		cpu->PC = cpu->operand;
 }
 
 
 // other
 void BRK(CPU *cpu)
 {
+	// TODO - implement BRK correctly
 	(void) cpu;
 	printf("BRK received; exiting...\n\n");
 	exit(EXIT_SUCCESS);
@@ -510,7 +606,9 @@ void PLA(CPU *cpu)
 
 void DEY(CPU *cpu)
 {
-	(void) cpu;
+	cpu->Y--;
+	cpu->Z = check_zero(cpu->Y);
+	cpu->N = check_negative(cpu->Y);
 }
 
 void TAY(CPU *cpu)
@@ -520,17 +618,21 @@ void TAY(CPU *cpu)
 
 void INY(CPU *cpu)
 {
-	(void) cpu;
+	cpu->Y++;
+	cpu->Z = check_zero(cpu->Y);
+	cpu->N = check_negative(cpu->Y);
 }
 
 void INX(CPU *cpu)
 {
-	(void) cpu;
+	cpu->X++;
+	cpu->Z = check_zero(cpu->X);
+	cpu->N = check_negative(cpu->X);
 }	
 
 void CLC(CPU *cpu)
 {
-	(void) cpu;
+	cpu->C = 0;
 }
 
 void SEC(CPU *cpu)
@@ -540,7 +642,7 @@ void SEC(CPU *cpu)
 
 void CLI(CPU *cpu)
 {
-	(void) cpu;
+	cpu->I = 0;
 }
 
 void SEI(CPU *cpu)
@@ -555,12 +657,12 @@ void TYA(CPU *cpu)
 
 void CLV(CPU *cpu)
 {
-	(void) cpu;
+	cpu->V = 0;
 }
 
 void CLD(CPU *cpu)
 {
-	(void) cpu;
+	cpu->D = 0;
 }
 
 void SED(CPU *cpu)
@@ -590,7 +692,9 @@ void TSX(CPU *cpu)
 
 void DEX(CPU *cpu)
 {
-	(void) cpu;
+	cpu->X--;
+	cpu->Z = check_zero(cpu->X);
+	cpu->N = check_negative(cpu->X);
 }
 
 void NOP(CPU *cpu)

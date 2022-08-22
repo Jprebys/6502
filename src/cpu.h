@@ -27,7 +27,7 @@ typedef struct CPU
 	uint8_t  A;          //accumulator
 	uint8_t  X;          //index register x
 	uint8_t  Y;          //index register y
-	uint8_t  S;          //stack pointer
+	uint8_t  SP;         //stack pointer
 
 	// processor flags 
 	unsigned int N : 1;  //negative
@@ -39,10 +39,12 @@ typedef struct CPU
 	unsigned int C : 1;  //carry
 
 	Instruction *current_inst;
-	uint16_t operand;
+	uint8_t operand;
+	uint16_t jmp_addr;
 
 } CPU;
 
+void reset_cpu(CPU *cpu);
 
 void implied(CPU *cpu, uint8_t *bytes);
 void accumulator(CPU *cpu, uint8_t *bytes);
