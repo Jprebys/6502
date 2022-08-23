@@ -12,7 +12,7 @@ typedef struct Instruction
 {
 	char name[3];
 	void (*operation)(struct CPU *);
-	void (*addr_mode)(struct CPU *, uint8_t *);
+	void (*addr_mode)(struct CPU *);
 	uint8_t clock_cycles;
 } Instruction;
 
@@ -47,19 +47,19 @@ typedef struct CPU
 
 void reset_cpu(CPU *);
 
-void implied(CPU *, uint8_t *);
-void accumulator(CPU *, uint8_t *);
-void relative(CPU *, uint8_t *);
-void immediate(CPU *, uint8_t *);
-void indirect(CPU *, uint8_t *);
-void zero_page(CPU *, uint8_t *);
-void absolute(CPU *, uint8_t *);
-void zero_offset_x(CPU *, uint8_t *);
-void zero_offset_y(CPU *, uint8_t *);
-void abs_offset_x(CPU *, uint8_t *);
-void abs_offset_y(CPU *, uint8_t *);
-void zero_indirect_x(CPU *, uint8_t *);
-void zero_indirect_y(CPU *, uint8_t *);
+void implied(CPU *);
+void accumulator(CPU *);
+void relative(CPU *);
+void immediate(CPU *);
+void indirect(CPU *);
+void zero_page(CPU *);
+void absolute(CPU *);
+void zero_offset_x(CPU *);
+void zero_offset_y(CPU *);
+void abs_offset_x(CPU *);
+void abs_offset_y(CPU *);
+void zero_indirect_x(CPU *);
+void zero_indirect_y(CPU *);
 
 
 void ORA(CPU *);

@@ -45,6 +45,8 @@ void reset_cpu(CPU *cpu)
 {
 	memset(cpu, 0, sizeof(CPU));
 	cpu->U = 1;  // unused flag bit 5 is always 1
+	cpu->B = 1;
+	cpu->D = 1;
 
 	uint8_t little, big;
 	little = cpu->memory[EXEC_ADDR];
@@ -89,9 +91,9 @@ void set_flags(CPU *cpu, uint8_t flags)
 
 void dump_cpu(CPU *cpu, FILE *f)
 {
-	fprintf(f, "Registers:\n A:%4hu X:%4hu Y:%4hu\n", cpu->A, cpu->X, cpu->Y);
-	fprintf(f, "PC:%4hu S:%4hu\n", cpu->PC, cpu->SP);
-	fprintf(f, "Flags:  NVUBDIZC\n        %d%d1%d%d%d%d%d\n\n", cpu->N, cpu->V, cpu->B, cpu->D, cpu->I, cpu->Z, cpu->C);
+	fprintf(f, "Registers:\nA:%02X X:%02X Y:%02X ", cpu->A, cpu->X, cpu->Y);
+	fprintf(f, "PC:%04X S:%02X\n", cpu->PC, cpu->SP);
+	fprintf(f, "Flags:  %02X   NVUBDIZC\n             %d%d1%d%d%d%d%d\n\n", get_flags(cpu), cpu->N, cpu->V, cpu->B, cpu->D, cpu->I, cpu->Z, cpu->C);
 }
 
 void inc_stack_ptr(CPU *cpu)
@@ -151,40 +153,41 @@ uint8_t *read_file_as_bytes(char *file_name, size_t *file_len)
 
 
 // 6502 assembler: https://www.masswerk.at/6502/assembler.html
-void run_program(CPU *cpu, uint8_t *program, size_t file_len, FILE *logfile)
+void run_program(CPU *cpu, FILE *logfile)
 {
 	uint8_t opcode;
 	Instruction *current_inst;
+	dump_cpu(cpu, stdout);
 
 	fprintf(logfile, "\n");
-	for (size_t inst_count = 0; cpu->PC < file_len; ++inst_count) 
+	for (size_t inst_count = 0; cpu->PC < 0xFFFF; ++inst_count) 
 	{
 		fprintf(logfile, "-----RESULT OF INST %lu-----\n", inst_count);
 
 		cpu->operand = 0x0000;
 
-		opcode = program[cpu->PC];
+		opcode = cpu->memory[cpu->PC];
 		current_inst = &instruction_table[opcode];
 		cpu->current_inst = current_inst;
 
-		current_inst->addr_mode(cpu, program);
+		current_inst->addr_mode(cpu);
 		current_inst->operation(cpu);
 
 		dump_cpu(cpu, stdout);
-
+		getchar();
 		// TODO - implement clock
 	}
+	
 }
 
 
 int main(void)
 {
 	size_t file_len;
-	char *fname = "program2";
-	char *outfile_name = "program2.asm";
+	char *fname = "nestest.nes";
 	uint8_t *bytes = read_file_as_bytes(fname, &file_len);
 
-	assembly_outfile = fopen(outfile_name, "w");
+	assembly_outfile = stdout;
 	if (assembly_outfile == NULL) 
 	{
 		perror("fopen outfile");
@@ -192,7 +195,12 @@ int main(void)
 	}
 
 	CPU *cpu = init_cpu();
-	run_program(cpu, bytes, file_len, stdout);
+
+	memcpy(&cpu->memory[0x8000], bytes + 0x0010, 0xC000 - 0x8000);
+	memcpy(&cpu->memory[0xC000], bytes + 0x0010, 0xC000 - 0x8000);
+	cpu->PC = 0xC000;
+
+	run_program(cpu, stdout);
 
 	fclose(assembly_outfile);
 	delete_cpu(cpu);
@@ -207,18 +215,18 @@ more: http://www.emulator101.com/6502-addressing-modes.html
 */
 
 // Implied instructions have no operands
-void implied(CPU *cpu, uint8_t *bytes)
+void implied(CPU *cpu)
 {
-	(void) bytes;
+	
 	cpu->PC += 1;
 	
 	fprintf(assembly_outfile, "%s\n", cpu->current_inst->name);
 }
 
 // Operand is accumulator
-void accumulator(CPU *cpu, uint8_t *bytes)
+void accumulator(CPU *cpu)
 {
-	(void) bytes;
+	
 	cpu->operand = cpu->A;
 	cpu->PC += 1;
 
@@ -226,9 +234,9 @@ void accumulator(CPU *cpu, uint8_t *bytes)
 }
 
 // The operand of an immediate instruction is only one byte, and denotes a constant value
-void immediate(CPU *cpu, uint8_t *bytes)
+void immediate(CPU *cpu)
 {
-	cpu->operand = bytes[cpu->PC + 1];
+	cpu->operand = cpu->memory[cpu->PC + 1];
 	cpu->jmp_addr = cpu->operand;
 	cpu->PC += 2;
 
@@ -236,21 +244,21 @@ void immediate(CPU *cpu, uint8_t *bytes)
 }
 
 // The operand of a zeropage instruction is one byte, and denotes an address in the zero page
-void zero_page(CPU *cpu, uint8_t *bytes)
+void zero_page(CPU *cpu)
 {
-	fprintf(assembly_outfile, "%s $%02X\n", cpu->current_inst->name, bytes[cpu->PC + 1]);
+	fprintf(assembly_outfile, "%s $%02X\n", cpu->current_inst->name, cpu->memory[cpu->PC + 1]);
 
-	cpu->jmp_addr = bytes[cpu->PC + 1];
-	cpu->operand = cpu->memory[bytes[cpu->PC + 1]];
+	cpu->jmp_addr = cpu->memory[cpu->PC + 1];
+	cpu->operand = cpu->memory[cpu->PC + 1];
 	cpu->PC += 2;
 }
 
 // The operand of an absolute instruction is two bytes, and denotes an address in memory
-void absolute(CPU *cpu, uint8_t *bytes)
+void absolute(CPU *cpu)
 {
 	uint8_t little, big;
-	little = bytes[cpu->PC + 1];
-	big = bytes[cpu->PC + 2];
+	little = cpu->memory[cpu->PC + 1];
+	big = cpu->memory[cpu->PC + 2];
 	uint16_t addr = (uint16_t)big << 8 | little;
 
 	cpu->jmp_addr = addr;
@@ -263,11 +271,11 @@ void absolute(CPU *cpu, uint8_t *bytes)
 
 // Indirect: operand is address; effective address is contents of word at address
 // only used by JMP
-void indirect(CPU *cpu, uint8_t *bytes)
+void indirect(CPU *cpu)
 {
 	uint8_t little, big;
-	little = bytes[cpu->PC + 1];
-	big = bytes[cpu->PC + 2];
+	little = cpu->memory[cpu->PC + 1];
+	big = cpu->memory[cpu->PC + 2];
 	uint16_t addr = (uint16_t)big << 8 | little;
 
 	fprintf(assembly_outfile, "%s ($%02X%02X)\n", cpu->current_inst->name, big, little);
@@ -283,36 +291,34 @@ void indirect(CPU *cpu, uint8_t *bytes)
 }
 
 // Set the operand to PC + the *signed* byte in the next 
-void relative(CPU *cpu, uint8_t *bytes)
+void relative(CPU *cpu)
 {
-	uint8_t offset = bytes[cpu->PC + 1];
-
-
-	fprintf(assembly_outfile, "%s $%02X\n", cpu->current_inst->name, offset);
+	uint8_t offset = cpu->memory[cpu->PC + 1];
 
 	cpu->operand = offset;
 	// cpu->jmp_addr = cpu->PC + (int8_t)offset;
 	// printf("%u = %u + %d   %u  %d\n", cpu->jmp_addr, cpu->PC, (int8_t)offset, offset, offset);
 	cpu->PC += 2;
+	fprintf(assembly_outfile, "%s $%04X\n", cpu->current_inst->name, cpu->PC + (int8_t)offset);
 }
 
 // A zero page memory address offset by X
-void zero_offset_x(CPU *cpu, uint8_t *bytes)
+void zero_offset_x(CPU *cpu)
 {
-	fprintf(assembly_outfile, "%s $%02X,X\n", cpu->current_inst->name, bytes[cpu->PC + 1]);
+	fprintf(assembly_outfile, "%s $%02X,X\n", cpu->current_inst->name, cpu->memory[cpu->PC + 1]);
 
-	uint8_t index = (bytes[cpu->PC + 1] + cpu->X) % 256;
+	uint8_t index = (cpu->memory[cpu->PC + 1] + cpu->X) % 256;
 	cpu->jmp_addr = (uint16_t)index;	
 	cpu->operand = cpu->memory[index];
 	cpu->PC += 2;
 }
 
 // A zero page memory address offset by Y
-void zero_offset_y(CPU *cpu, uint8_t *bytes)
+void zero_offset_y(CPU *cpu)
 {
-	fprintf(assembly_outfile, "%s $%02X,Y\n", cpu->current_inst->name, bytes[cpu->PC + 1]);
+	fprintf(assembly_outfile, "%s $%02X,Y\n", cpu->current_inst->name, cpu->memory[cpu->PC + 1]);
 
-	uint8_t index = (bytes[cpu->PC + 1] + cpu->Y) % 256;
+	uint8_t index = (cpu->memory[cpu->PC + 1] + cpu->Y) % 256;
 
 	cpu->jmp_addr = (uint16_t)index;
 
@@ -321,11 +327,11 @@ void zero_offset_y(CPU *cpu, uint8_t *bytes)
 }
 
 // An absolute memory address offset by X
-void abs_offset_x(CPU *cpu, uint8_t *bytes)
+void abs_offset_x(CPU *cpu)
 {
 	uint8_t little, big;
-	little = bytes[cpu->PC + 1];
-	big = bytes[cpu->PC + 2];
+	little = cpu->memory[cpu->PC + 1];
+	big = cpu->memory[cpu->PC + 2];
 	uint16_t addr = (uint16_t)big << 8 | little;
 
 	fprintf(assembly_outfile, "%s $%02X%02X,X\n", cpu->current_inst->name, little, big);
@@ -337,11 +343,11 @@ void abs_offset_x(CPU *cpu, uint8_t *bytes)
 }
 
 // An absolute memory address offset by Y
-void abs_offset_y(CPU *cpu, uint8_t *bytes)
+void abs_offset_y(CPU *cpu)
 {
 	uint8_t little, big;
-	little = bytes[cpu->PC + 1];
-	big = bytes[cpu->PC + 2];
+	little = cpu->memory[cpu->PC + 1];
+	big = cpu->memory[cpu->PC + 2];
 	uint16_t addr = (uint16_t)big << 8 | little;
 
 	fprintf(assembly_outfile, "%s $%02X%02X,Y\n", cpu->current_inst->name, little, big);
@@ -352,11 +358,11 @@ void abs_offset_y(CPU *cpu, uint8_t *bytes)
 	cpu->PC += 3;
 }
 
-void zero_indirect_x(CPU *cpu, uint8_t *bytes)
+void zero_indirect_x(CPU *cpu)
 {
 
 	uint8_t little, big, addr, *val;
-	addr = bytes[cpu->PC + 1] + cpu->X;
+	addr = cpu->memory[cpu->PC + 1] + cpu->X;
 	val = &cpu->memory[addr];
 	little = *val;
 	// "Increments without carry do not affect the hi-byte of an address and no page transitions do occur"
@@ -374,10 +380,10 @@ void zero_indirect_x(CPU *cpu, uint8_t *bytes)
 	cpu->PC += 2;
 }
 
-void zero_indirect_y(CPU *cpu, uint8_t *bytes)
+void zero_indirect_y(CPU *cpu)
 {
 	uint8_t little, big, *val;
-	val = &cpu->memory[bytes[cpu->PC + 1]];
+	val = &cpu->memory[cpu->memory[cpu->PC + 1]];
 	little = *val;
 	big = *(val + 1);
 	uint16_t addr = (uint16_t)big << 8 | little;
@@ -461,6 +467,8 @@ void STA(CPU *cpu)
 void LDA(CPU *cpu)
 {
 	cpu->A = cpu->operand;
+	cpu->Z = check_zero(cpu->A);
+	cpu->N = check_negative(cpu->A);
 }
 
 void CMP(CPU *cpu)
@@ -516,7 +524,7 @@ void LSR(CPU *cpu)
 	else
 		cpu->memory[cpu->jmp_addr] = temp;
 	cpu->C = cpu->operand & 0x01 ? 1 : 0;
-	cpu->N = check_negative(temp);
+	cpu->N = 0;
 	cpu->Z = check_zero(temp);
 }
 
@@ -543,6 +551,8 @@ void STX(CPU *cpu)
 void LDX(CPU *cpu)
 {
 	cpu->X = cpu->operand;
+	cpu->Z = check_zero(cpu->X);
+	cpu->N = check_negative(cpu->X);
 }
 
 void INC(CPU *cpu)
@@ -580,7 +590,7 @@ void STY(CPU *cpu)
 
 void LDY(CPU *cpu)
 {
-	cpu->Y = cpu->memory;
+	cpu->Y = cpu->operand;
 }
 
 void CPY(CPU *cpu)
@@ -702,6 +712,8 @@ void PHA(CPU *cpu)
 void PLA(CPU *cpu)
 {
 	cpu->A = stack_pop(cpu);
+	cpu->Z = check_zero(cpu->A);
+	cpu->N = check_negative(cpu->A);
 }
 
 void DEY(CPU *cpu)
@@ -714,6 +726,8 @@ void DEY(CPU *cpu)
 void TAY(CPU *cpu)
 {
 	cpu->Y = cpu->A;
+	cpu->Z = check_zero(cpu->Y);
+	cpu->N = check_negative(cpu->Y);
 }
 
 void INY(CPU *cpu)
@@ -753,6 +767,8 @@ void SEI(CPU *cpu)
 void TYA(CPU *cpu)
 {
 	cpu->A = cpu->Y;
+	cpu->Z = check_zero(cpu->A);
+	cpu->N = check_negative(cpu->A);
 }
 
 void CLV(CPU *cpu)
@@ -773,21 +789,29 @@ void SED(CPU *cpu)
 void TXA(CPU *cpu)
 {
 	cpu->A = cpu->X;
+	cpu->Z = check_zero(cpu->X);
+	cpu->N = check_negative(cpu->X);
 }
 
 void TXS(CPU *cpu)
 {
 	stack_push(cpu, cpu->X);
+	cpu->Z = check_zero(cpu->X);
+	cpu->N = check_negative(cpu->X);
 }
 
 void TAX(CPU *cpu)
 {
 	cpu->X = cpu->A;
+	cpu->Z = check_zero(cpu->X);
+	cpu->N = check_negative(cpu->X);
 }
 
 void TSX(CPU *cpu)
 {
 	cpu->X = stack_pop(cpu);
+	cpu->Z = check_zero(cpu->X);
+	cpu->N = check_negative(cpu->X);
 }
 
 void DEX(CPU *cpu)
