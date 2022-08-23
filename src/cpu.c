@@ -9,6 +9,7 @@
 #define STK_PTR_START  0xFD
 #define EXEC_ADDR      0xFFFC
 #define N_INSTRUCTIONS 256
+#define CPU_CLK_START  7
 
 FILE *assembly_outfile;
 
@@ -45,8 +46,7 @@ void reset_cpu(CPU *cpu)
 {
 	memset(cpu, 0, sizeof(CPU));
 	cpu->U = 1;  // unused flag bit 5 is always 1
-	cpu->B = 1;
-	cpu->D = 1;
+	cpu->I = 1;
 
 	uint8_t little, big;
 	little = cpu->memory[EXEC_ADDR];
@@ -54,6 +54,7 @@ void reset_cpu(CPU *cpu)
 	cpu->PC = (uint16_t)big << 8 | little;
 
 	cpu->SP = STK_PTR_START;
+	cpu->total_cycles = CPU_CLK_START;
 }
 
 void delete_cpu(CPU *cpu)
@@ -91,9 +92,8 @@ void set_flags(CPU *cpu, uint8_t flags)
 
 void dump_cpu(CPU *cpu, FILE *f)
 {
-	fprintf(f, "Registers:\nA:%02X X:%02X Y:%02X ", cpu->A, cpu->X, cpu->Y);
-	fprintf(f, "PC:%04X S:%02X\n", cpu->PC, cpu->SP);
-	fprintf(f, "Flags:  %02X   NVUBDIZC\n             %d%d1%d%d%d%d%d\n\n", get_flags(cpu), cpu->N, cpu->V, cpu->B, cpu->D, cpu->I, cpu->Z, cpu->C);
+	fprintf(f, "\nA:%02X X:%02X Y:%02X P:%02X SP:%02X  PPU: --, -- CYC:%u\n\n", cpu->A, cpu->X, cpu->Y, get_flags(cpu), cpu->SP, cpu->total_cycles);
+	fprintf(f, "Flags: NVUBDIZC\n       %d%d%d%d%d%d%d%d\n\n", cpu->N, cpu->V, cpu->U, cpu->B, cpu->D, cpu->I, cpu->Z, cpu->C);
 }
 
 void inc_stack_ptr(CPU *cpu)
@@ -162,7 +162,8 @@ void run_program(CPU *cpu, FILE *logfile)
 	fprintf(logfile, "\n");
 	for (size_t inst_count = 0; cpu->PC < 0xFFFF; ++inst_count) 
 	{
-		fprintf(logfile, "-----RESULT OF INST %lu-----\n", inst_count);
+		fprintf(logfile, "-----------RESULT OF INST %lu-----------\n\n", inst_count);
+		fprintf(logfile, "%04X: ", cpu->PC);
 
 		cpu->operand = 0x0000;
 
@@ -170,12 +171,20 @@ void run_program(CPU *cpu, FILE *logfile)
 		current_inst = &instruction_table[opcode];
 		cpu->current_inst = current_inst;
 
+		cpu->current_cycles += current_inst->clock_cycles;
+		cpu->total_cycles   += current_inst->clock_cycles;
+
 		current_inst->addr_mode(cpu);
 		current_inst->operation(cpu);
 
 		dump_cpu(cpu, stdout);
 		getchar();
+
+
 		// TODO - implement clock
+		while (cpu->current_cycles)
+			cpu->current_cycles--;
+
 	}
 	
 }

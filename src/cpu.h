@@ -19,15 +19,16 @@ typedef struct Instruction
 
 typedef struct CPU
 {
+	// 64 KiB memory (RAM + ROM)
 	uint8_t memory[ADDRESS_BYTES];
 
 	// registers
 	// described here: https://codebase64.org/doku.php?id=base:6502_registers
-	uint16_t PC;         //program counter
-	uint8_t  A;          //accumulator
-	uint8_t  X;          //index register x
-	uint8_t  Y;          //index register y
-	uint8_t  SP;         //stack pointer
+	uint16_t PC;         // program counter
+	uint8_t  A;          // accumulator
+	uint8_t  X;          // index register x
+	uint8_t  Y;          // index register y
+	uint8_t  SP;         // stack pointer
 
 	// processor flags 
 	unsigned int N : 1;  // 7 negative
@@ -39,11 +40,17 @@ typedef struct CPU
 	unsigned int Z : 1;  // 1 zero
 	unsigned int C : 1;  // 0 carry
 
+	// instruction execution
 	Instruction *current_inst;
-	uint8_t operand;
+	uint8_t  operand;
 	uint16_t jmp_addr;
 
+	// clock
+	uint8_t  current_cycles;
+	uint32_t total_cycles;
+
 } CPU;
+
 
 void reset_cpu(CPU *);
 
