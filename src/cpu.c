@@ -7,13 +7,20 @@
 #define STACK_START    0x0100
 #define STACK_END      0x01FF
 #define STK_PTR_START  0xFD
-#define EXEC_ADDR      0xFFFC
+#define NMI_LO         0xFFFA
+#define NMI_HI         0xFFFB
+#define RESET_LO       0xFFFC
+#define RESET_HI       0xFFFD
+#define IRQ_LO         0xFFFE
+#define IRQ_HI         0xFFFF
 #define N_INSTRUCTIONS 256
 #define CPU_CLK_START  7
+
 
 FILE *assembly_outfile;
 
 // full instr set: https://www.masswerk.at/6502/6502_instruction_set.html
+// credit to OneLoneCoder for the idea behind this instruction set representation
 Instruction instruction_table[N_INSTRUCTIONS] = 
 {// -0                          -1                                -2                          -3                      -4                              -5                              -6                              -7                      -8                        -9                             -A                            -B                      -C                             -D                             -E                             -F
 	{"BRK", BRK, implied, 7},   {"ORA", ORA, zero_indirect_x, 6}, {"XXX", NULL, NULL, 2},     {"XXX", NULL, NULL, 2}, {"XXX", NULL, NULL, 2},         {"ORA", ORA, zero_page, 3},     {"ASL", ASL, zero_page, 5},     {"XXX", NULL, NULL, 2}, {"PHP", PHP, implied, 3}, {"ORA", ORA, immediate, 2},    {"ASL", ASL, accumulator, 2}, {"XXX", NULL, NULL, 2}, {"XXX", NULL, NULL, 2},        {"ORA", ORA, absolute, 4},     {"ASL", ASL, absolute, 6},     {"XXX", NULL, NULL, 2}, // 2-
@@ -49,8 +56,8 @@ void reset_cpu(CPU *cpu)
 	cpu->I = 1;
 
 	uint8_t little, big;
-	little = cpu->memory[EXEC_ADDR];
-	big = cpu->memory[EXEC_ADDR + 1];
+	little = cpu->memory[RESET_LO];
+	big = cpu->memory[RESET_HI];
 	cpu->PC = (uint16_t)big << 8 | little;
 
 	cpu->SP = STK_PTR_START;
@@ -98,7 +105,6 @@ void dump_cpu(CPU *cpu, FILE *f)
 			printf("\n");
 		printf("%02X ", cpu->memory[i]);
 	}
-
 
 	fprintf(f, "\nA:%02X X:%02X Y:%02X P:%02X SP:%02X  PPU: --, -- CYC:%u\n\n", cpu->A, cpu->X, cpu->Y, get_flags(cpu), cpu->SP, cpu->total_cycles);
 	fprintf(f, "Flags: NVUBDIZC\n       %d%d%d%d%d%d%d%d\n\n", cpu->N, cpu->V, cpu->U, cpu->B, cpu->D, cpu->I, cpu->Z, cpu->C);
@@ -202,7 +208,7 @@ void run_program(CPU *cpu, FILE *logfile)
 
 		
 
-		if (inst_count > 800)
+		if (inst_count > 1000)
 		{
 			dump_cpu(cpu, stdout);
 			getchar();
@@ -710,7 +716,7 @@ void BRK(CPU *cpu)
 
 	cpu->B = 0;
 
-	cpu->PC = ((uint16_t)cpu->memory[0xFFFE]) | ((uint16_t)cpu->memory[0xFFFF] << 8);
+	cpu->PC = ((uint16_t)cpu->memory[IRQ_LO]) | ((uint16_t)cpu->memory[IRQ_HI] << 8);
 }
 
 void JSR(CPU *cpu)
@@ -844,8 +850,6 @@ void TXA(CPU *cpu)
 void TXS(CPU *cpu)
 {
 	cpu->SP = cpu->X;
-	cpu->Z = check_zero(cpu->X);
-	cpu->N = check_negative(cpu->X);
 }
 
 void TAX(CPU *cpu)
@@ -872,4 +876,45 @@ void DEX(CPU *cpu)
 void NOP(CPU *cpu)
 {
 	(void) cpu;
+}
+
+
+// Interrupts
+
+void IMP(CPU *cpu)
+{
+	if (cpu->I == 0)
+	{
+		stack_push_word(cpu, cpu->PC);
+
+		cpu->B = 0;
+		cpu->U = 1;
+		cpu->I = 1;
+		stack_push(cpu, get_flags(cpu));
+
+		uint16_t little = cpu->memory[IRQ_LO];
+		uint8_t  big    = cpu->memory[IRQ_HI];
+		cpu->PC = little | (big << 8);
+
+		cpu->current_cycles += 7;
+		cpu->total_cycles   += 7;
+	}
+
+}
+
+void NMI(CPU *cpu)
+{
+		stack_push_word(cpu, cpu->PC);
+
+		cpu->B = 0;
+		cpu->U = 1;
+		cpu->I = 1;
+		stack_push(cpu, get_flags(cpu));
+
+		uint16_t little = cpu->memory[NMI_LO];
+		uint8_t  big    = cpu->memory[NMI_HI];
+		cpu->PC = little | (big << 8);
+
+		cpu->current_cycles += 8;
+		cpu->total_cycles   += 8;
 }
