@@ -2,8 +2,6 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
-
-#include <SDL2/SDL.h>
 #include "cpu.h"
 
 #define STACK_START    0x0100
