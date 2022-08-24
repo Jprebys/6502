@@ -210,7 +210,7 @@ void run_program(CPU *cpu, FILE *logfile)
 
 		
 
-		if (inst_count > 2190)
+		if (inst_count > 3363)
 		{
 			dump_cpu(cpu, stdout);
 			getchar();
@@ -323,11 +323,14 @@ void indirect(CPU *cpu)
 	uint16_t addr = (uint16_t)big << 8 | little;
 
 	fprintf(assembly_outfile, "%s ($%02X%02X)\n", cpu->current_inst->name, big, little);
-
-	little = cpu->memory[addr];
 	if (little == 0xFF)
-		little = 0x00;  // no carry bug
-	big = cpu->memory[addr + 1];
+		big = cpu->memory[addr - 0xFF]; // no carry bug
+	else  
+		big = cpu->memory[addr + 1];
+	little = cpu->memory[addr];
+
+
+
 
 	cpu->jmp_addr = (uint16_t)big << 8 | little;
 	cpu->operand = cpu->memory[cpu->jmp_addr];
@@ -380,8 +383,8 @@ void abs_offset_x(CPU *cpu)
 
 	fprintf(assembly_outfile, "%s $%02X%02X,X\n", cpu->current_inst->name, little, big);
 
-	cpu->jmp_addr = addr + cpu->X;
-	cpu->operand = cpu->memory[addr + cpu->X];
+	cpu->jmp_addr = addr + (uint16_t)cpu->X;
+	cpu->operand = cpu->memory[cpu->jmp_addr];
 	cpu->PC += 3;
 }
 
@@ -395,9 +398,8 @@ void abs_offset_y(CPU *cpu)
 
 	fprintf(assembly_outfile, "%s $%02X%02X,Y\n", cpu->current_inst->name, little, big);
 
-	cpu->jmp_addr = addr + cpu->Y;
-
-	cpu->operand = cpu->memory[addr + cpu->Y];
+	cpu->jmp_addr = addr + (uint16_t)cpu->Y;
+	cpu->operand = cpu->memory[cpu->jmp_addr];
 	cpu->PC += 3;
 }
 
@@ -425,17 +427,24 @@ void zero_indirect_x(CPU *cpu)
 
 void zero_indirect_y(CPU *cpu)
 {
-	uint8_t little, big, *val;
-	val = &cpu->memory[cpu->memory[cpu->PC + 1]];
-	little = *val;
-	big = *(val + 1);
+	uint8_t little, big, val;
+	val = cpu->memory[cpu->PC + 1];
+	little = cpu->memory[val];
+	if (val == 0xFF)
+	{
+		big = cpu->memory[0x00];
+	} else
+		big = cpu->memory[val + 1];
+	
 	uint16_t addr = (uint16_t)big << 8 | little;
+
 
 	fprintf(assembly_outfile, "%s ($%02X),Y\n", cpu->current_inst->name, cpu->memory[cpu->PC + 1]);	
 
-	cpu->jmp_addr = addr + cpu->Y;
+	cpu->jmp_addr = addr + ((uint16_t)cpu->Y & 0x00FF);
+	printf("%04X %04X\n", addr, cpu->jmp_addr);
 
-	cpu->operand = cpu->memory[addr + cpu->Y];
+	cpu->operand = cpu->memory[cpu->jmp_addr];
 	cpu->PC += 2;
 }
 
