@@ -261,7 +261,6 @@ more: http://www.emulator101.com/6502-addressing-modes.html
 // Implied instructions have no operands
 void implied(CPU *cpu)
 {
-	
 	cpu->PC += 1;
 	
 	fprintf(assembly_outfile, "%s\n", cpu->current_inst->name);
@@ -328,9 +327,6 @@ void indirect(CPU *cpu)
 	else  
 		big = cpu->memory[addr + 1];
 	little = cpu->memory[addr];
-
-
-
 
 	cpu->jmp_addr = (uint16_t)big << 8 | little;
 	cpu->operand = cpu->memory[cpu->jmp_addr];
