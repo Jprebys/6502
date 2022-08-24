@@ -1,6 +1,8 @@
 #ifndef _CPU_6502_H
 #define _CPU_6502_H
 
+#include <stdint.h>
+
 #define BYTES_PER_PAGE 256
 #define PAGES          256
 #define ADDRESS_BYTES  BYTES_PER_PAGE*PAGES
@@ -51,9 +53,23 @@ typedef struct CPU
 
 } CPU;
 
-
+CPU *init_cpu();
 void reset_cpu(CPU *);
+void delete_cpu(CPU *);
+uint8_t get_flags(CPU *);
+void set_flags(CPU *, uint8_t);
+void dump_cpu(CPU *, FILE *);
+void inc_stack_ptr(CPU *);
+void dec_stack_ptr(CPU *);
+void stack_push(CPU *, uint8_t);
+uint8_t stack_pop(CPU *);
+void stack_push_word(CPU *, uint16_t);
+uint16_t stack_pop_word(CPU *);
 
+uint8_t *read_file_as_bytes(char *, size_t *);
+void run_program(CPU *, FILE *);
+
+// Address modes
 void implied(CPU *);
 void accumulator(CPU *);
 void relative(CPU *);
@@ -125,5 +141,8 @@ void TAX(CPU *);
 void TSX(CPU *);
 void DEX(CPU *);
 void NOP(CPU *);
+
+void IMP(CPU *);
+void NMI(CPU *);
 
 #endif

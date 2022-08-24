@@ -2,6 +2,8 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
+
+#include <SDL2/SDL.h>
 #include "cpu.h"
 
 #define STACK_START    0x0100
@@ -208,7 +210,7 @@ void run_program(CPU *cpu, FILE *logfile)
 
 		
 
-		if (inst_count > 1000)
+		if (inst_count > 1320)
 		{
 			dump_cpu(cpu, stdout);
 			getchar();
@@ -414,7 +416,7 @@ void zero_indirect_x(CPU *cpu)
 		big = *(val + 1);
 	uint16_t final_addr = (uint16_t)big << 8 | little;
 
-	fprintf(assembly_outfile, "%s ($%02X,X)\n", cpu->current_inst->name, *val);
+	fprintf(assembly_outfile, "%s ($%02X,X)\n", cpu->current_inst->name, cpu->memory[cpu->PC + 1]);
 
 	cpu->jmp_addr = final_addr;
 
@@ -430,7 +432,7 @@ void zero_indirect_y(CPU *cpu)
 	big = *(val + 1);
 	uint16_t addr = (uint16_t)big << 8 | little;
 
-	fprintf(assembly_outfile, "%s ($%02X),Y\n", cpu->current_inst->name, *val);	
+	fprintf(assembly_outfile, "%s ($%02X),Y\n", cpu->current_inst->name, cpu->memory[cpu->PC + 1]);	
 
 	cpu->jmp_addr = addr + cpu->Y;
 
@@ -443,17 +445,17 @@ void zero_indirect_y(CPU *cpu)
 // details: https://llx.com/Neil/a2/opcodes.html
 // more: http://www.emulator101.com/reference/6502-reference.html
 
-uint8_t check_negative(uint8_t value)
+static uint8_t check_negative(uint8_t value)
 {
 	return value & 0x80 ? 1 : 0;
 }
 
-uint8_t check_zero(uint8_t value)
+static uint8_t check_zero(uint8_t value)
 {
 	return value ? 0 : 1;
 }
 
-uint8_t check_carry(uint8_t value)
+static uint8_t check_carry(uint8_t value)
 {
 	return value & 0x80 ? 1 : 0;
 }
@@ -546,9 +548,9 @@ void ASL(CPU *cpu)
 
 void ROL(CPU *cpu)
 {
-	cpu->C = check_carry(cpu->operand);
 
 	uint8_t temp = (cpu->operand << 1) + cpu->C;
+	cpu->C = check_carry(cpu->operand);
 	if (cpu->current_inst->addr_mode == accumulator)
 		cpu->A = temp;
 	else
@@ -572,9 +574,10 @@ void LSR(CPU *cpu)
 
 void ROR(CPU *cpu)
 {
-	cpu->C = check_negative(cpu->operand);
 
 	uint8_t temp = (cpu->operand >> 1) | (cpu->C << 7);
+
+	cpu->C = cpu->operand & 0x01 ? 1 : 0;
 
 	if (cpu->current_inst->addr_mode == accumulator)
 		cpu->A = temp;
