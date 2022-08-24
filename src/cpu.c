@@ -85,13 +85,21 @@ void set_flags(CPU *cpu, uint8_t flags)
 	cpu->I = flags & 1 << 2 ? 1 : 0;
 	cpu->D = flags & 1 << 3 ? 1 : 0;
 	cpu->B = flags & 1 << 4 ? 1 : 0;
-	cpu->U = flags & 1 << 5 ? 1 : 0;
+	cpu->U = 1;  // always 1
 	cpu->V = flags & 1 << 6 ? 1 : 0;
 	cpu->N = flags & 1 << 7 ? 1 : 0;
 }
 
 void dump_cpu(CPU *cpu, FILE *f)
 {
+	for (size_t i = 0; i < 256; i++)
+	{
+		if (i % 8 == 0)
+			printf("\n");
+		printf("%02X ", cpu->memory[i]);
+	}
+
+
 	fprintf(f, "\nA:%02X X:%02X Y:%02X P:%02X SP:%02X  PPU: --, -- CYC:%u\n\n", cpu->A, cpu->X, cpu->Y, get_flags(cpu), cpu->SP, cpu->total_cycles);
 	fprintf(f, "Flags: NVUBDIZC\n       %d%d%d%d%d%d%d%d\n\n", cpu->N, cpu->V, cpu->U, cpu->B, cpu->D, cpu->I, cpu->Z, cpu->C);
 }
@@ -128,6 +136,21 @@ uint8_t stack_pop(CPU *cpu)
 	return cpu->memory[STACK_START + cpu->SP];
 }
 
+void stack_push_word(CPU *cpu, uint16_t word)
+{
+	stack_push(cpu, (word >> 8) & 0x00FF); 
+	stack_push(cpu, word & 0x00FF);
+}
+
+uint16_t stack_pop_word(CPU *cpu)
+{
+	uint16_t result = 0x0000;
+
+	result |= stack_pop(cpu);
+	result |= (uint16_t)stack_pop(cpu) << 8;
+
+	return result;
+}
 
 // This will read the whole file into an array of bytes...
 // maybe there is a smarter buffered way to do this
@@ -178,7 +201,9 @@ void run_program(CPU *cpu, FILE *logfile)
 		current_inst->operation(cpu);
 
 		dump_cpu(cpu, stdout);
-		getchar();
+
+		if (inst_count > 110)
+			getchar();
 
 
 		// TODO - implement clock
@@ -257,8 +282,8 @@ void zero_page(CPU *cpu)
 {
 	fprintf(assembly_outfile, "%s $%02X\n", cpu->current_inst->name, cpu->memory[cpu->PC + 1]);
 
-	cpu->jmp_addr = cpu->memory[cpu->PC + 1];
-	cpu->operand = cpu->memory[cpu->PC + 1];
+	cpu->jmp_addr = (uint16_t)cpu->memory[cpu->PC + 1] & 0x00FF;
+	cpu->operand = cpu->memory[cpu->memory[cpu->PC + 1]];
 	cpu->PC += 2;
 }
 
@@ -582,6 +607,7 @@ void DEC(CPU *cpu)
 // group 3
 void BIT(CPU *cpu)
 {
+	printf("%02X %02X\n", cpu->operand, cpu->A);
 	cpu->Z = check_zero((cpu->operand & cpu->A) & 0x00FF);
 	cpu->V = cpu->operand & (1 << 6) ? 1 : 0;
 	cpu->N = cpu->operand & (1 << 7) ? 1 : 0;
@@ -680,8 +706,9 @@ void BRK(CPU *cpu)
 
 void JSR(CPU *cpu)
 {
-	// TODO - verify that we want the high bit of this on the stack
-	stack_push(cpu, (cpu->jmp_addr >> 8) & 0x00FF); 
+	cpu->PC -= 1;
+
+	stack_push_word(cpu, cpu->PC);
 
 	cpu->PC = cpu->jmp_addr;
 }
@@ -692,14 +719,12 @@ void RTI(CPU *cpu)
 	set_flags(cpu, stack_pop(cpu));
 	cpu->B = B;
 
-	cpu->PC = stack_pop(cpu);
-	cpu->PC |= stack_pop(cpu) << 8;
+	cpu->PC = stack_pop_word(cpu);
 }
 
 void RTS(CPU *cpu)
 {
-	cpu->PC = stack_pop(cpu);
-	cpu->PC |= stack_pop(cpu) << 8;
+	cpu->PC = stack_pop_word(cpu);
 	cpu->PC++;
 }
 
