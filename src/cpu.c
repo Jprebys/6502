@@ -210,7 +210,7 @@ void run_program(CPU *cpu, FILE *logfile)
 
 		
 
-		if (inst_count > 1320)
+		if (inst_count > 2190)
 		{
 			dump_cpu(cpu, stdout);
 			getchar();
@@ -352,7 +352,7 @@ void zero_offset_x(CPU *cpu)
 	fprintf(assembly_outfile, "%s $%02X,X\n", cpu->current_inst->name, cpu->memory[cpu->PC + 1]);
 
 	uint8_t index = (cpu->memory[cpu->PC + 1] + cpu->X) % 256;
-	cpu->jmp_addr = (uint16_t)index;	
+	cpu->jmp_addr = (uint16_t)index & 0x00FF;	
 	cpu->operand = cpu->memory[index];
 	cpu->PC += 2;
 }
@@ -381,7 +381,6 @@ void abs_offset_x(CPU *cpu)
 	fprintf(assembly_outfile, "%s $%02X%02X,X\n", cpu->current_inst->name, little, big);
 
 	cpu->jmp_addr = addr + cpu->X;
-
 	cpu->operand = cpu->memory[addr + cpu->X];
 	cpu->PC += 3;
 }
@@ -603,6 +602,7 @@ void LDX(CPU *cpu)
 void INC(CPU *cpu)
 {
 	cpu->operand++;
+	cpu->memory[cpu->jmp_addr] = cpu->operand;
 	cpu->Z = check_zero(cpu->operand);
 	cpu->N = check_negative(cpu->operand);
 }
@@ -610,6 +610,7 @@ void INC(CPU *cpu)
 void DEC(CPU *cpu)
 {
 	cpu->operand--;
+	cpu->memory[cpu->jmp_addr] = cpu->operand;
 	cpu->Z = check_zero(cpu->operand);
 	cpu->N = check_negative(cpu->operand);
 }
