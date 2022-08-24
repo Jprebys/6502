@@ -200,11 +200,13 @@ void run_program(CPU *cpu, FILE *logfile)
 		current_inst->addr_mode(cpu);
 		current_inst->operation(cpu);
 
-		dump_cpu(cpu, stdout);
+		
 
-		if (inst_count > 110)
+		if (inst_count > 800)
+		{
+			dump_cpu(cpu, stdout);
 			getchar();
-
+		}
 
 		// TODO - implement clock
 		while (cpu->current_cycles)
@@ -626,6 +628,8 @@ void STY(CPU *cpu)
 void LDY(CPU *cpu)
 {
 	cpu->Y = cpu->operand;
+	cpu->Z = check_zero(cpu->Y);
+	cpu->N = check_negative(cpu->Y);
 }
 
 void CPY(CPU *cpu)
@@ -698,10 +702,15 @@ void BEQ(CPU *cpu)
 // other
 void BRK(CPU *cpu)
 {
-	// TODO - implement BRK correctly
-	(void) cpu;
-	printf("BRK received; exiting...\n\n");
-	exit(EXIT_SUCCESS);
+	uint8_t flags = get_flags(cpu);
+	flags |= 1 << 4;
+
+	stack_push_word(cpu, cpu->PC + 1);
+	stack_push(cpu, flags);
+
+	cpu->B = 0;
+
+	cpu->PC = ((uint16_t)cpu->memory[0xFFFE]) | ((uint16_t)cpu->memory[0xFFFF] << 8);
 }
 
 void JSR(CPU *cpu)
@@ -730,12 +739,17 @@ void RTS(CPU *cpu)
 
 void PHP(CPU *cpu)
 {
-	stack_push(cpu, get_flags(cpu));
+	uint8_t flags = get_flags(cpu);
+	flags |= 1 << 4;
+	flags |= 1 << 5;
+	stack_push(cpu, flags);
 }
 
 void PLP(CPU *cpu)
 {
+	uint8_t B = cpu->B;
 	set_flags(cpu, stack_pop(cpu));
+	cpu->B = B;
 }
 
 void PHA(CPU *cpu)
@@ -829,7 +843,7 @@ void TXA(CPU *cpu)
 
 void TXS(CPU *cpu)
 {
-	stack_push(cpu, cpu->X);
+	cpu->SP = cpu->X;
 	cpu->Z = check_zero(cpu->X);
 	cpu->N = check_negative(cpu->X);
 }
@@ -843,7 +857,7 @@ void TAX(CPU *cpu)
 
 void TSX(CPU *cpu)
 {
-	cpu->X = stack_pop(cpu);
+	cpu->X = cpu->SP;
 	cpu->Z = check_zero(cpu->X);
 	cpu->N = check_negative(cpu->X);
 }
